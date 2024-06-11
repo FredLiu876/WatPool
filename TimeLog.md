@@ -2,6 +2,7 @@
 
 | Date          | Domenico | James | Fred | Sriram | Govind | Arham | Task                                 |
 |---------------|----------|-------|------|--------|--------|-------|--------------------------------------|
+| June 02, 2024 |  0.5     | 0.5   | 0.5  |  0.5   |  0.5   |  0.5  | Meeting to discuss D1                |
 | June 05, 2024 |          |       |      |        |        | 0.5   | Inital Project File Creation         |
 | June 05, 2024 |          |       |      |        |        |       | test_task_0                          |
 | June 10, 2024 |          | 2     |      |        |        |       | Added current trip status bar layout |
