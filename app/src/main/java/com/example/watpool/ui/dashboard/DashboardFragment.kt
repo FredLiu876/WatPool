@@ -8,6 +8,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.databinding.FragmentDashboardBinding
+import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
+import com.google.android.material.button.MaterialButton
+
 
 class DashboardFragment : Fragment() {
 
@@ -32,9 +35,14 @@ class DashboardFragment : Fragment() {
         dashboardViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
+
+        val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
+        buttonOpenBottomSheet.setOnClickListener {
+            val bottomSheet = SafetyBottomSheetDialog()
+            bottomSheet.show(requireActivity().supportFragmentManager, "exampleBottomSheet")
+        }
         return root
     }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
