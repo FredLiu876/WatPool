@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "134067572010",
+    "project_id": "watpool",
+    "storage_bucket": "watpool.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134067572010:android:08528e3eb13a7347eb6253",
+        "android_client_info": {
+          "package_name": "com.example.watpool"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeBkeB4JgCtRJXV0K1uvurTXVlxf5cEeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
