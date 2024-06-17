@@ -1,0 +1,41 @@
+package com.example.watpool.ui.welcome
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.example.watpool.databinding.FragmentWelcomeBinding
+
+class WelcomeFragment : Fragment() {
+    private var _binding: FragmentWelcomeBinding? = null
+    private val binding get() = _binding!!
+    private val viewModel: WelcomeViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentWelcomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        (activity as AppCompatActivity).supportActionBar?.hide()
+
+        binding.buttonGetStarted.setOnClickListener {
+            viewModel.onGetStartedClicked(findNavController())
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (activity as AppCompatActivity).supportActionBar?.show()
+        _binding = null
+    }
+}
