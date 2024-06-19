@@ -9,14 +9,13 @@
         android:id="@+id/btn_filter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_settings_48dp"
-        android:background="@color/white"
         android:layout_marginHorizontal="16dp"
+        android:background="@color/white"
+        android:src="@drawable/ic_settings_48dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@id/status_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/status_text"
@@ -25,10 +24,9 @@
         android:text="10 mins     7 km"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/action_text"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toRightOf="@id/btn_filter"
         app:layout_constraintRight_toLeftOf="@id/btn_menu"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/action_text"
@@ -37,23 +35,21 @@
         android:text="Picking up John"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/status_text"
         app:layout_constraintLeft_toRightOf="@id/btn_filter"
         app:layout_constraintRight_toLeftOf="@id/btn_menu"
-        />
+        app:layout_constraintTop_toBottomOf="@id/status_text" />
 
     <ImageButton
         android:id="@+id/btn_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_menu_48dp"
-        android:background="@color/white"
         android:layout_marginHorizontal="16dp"
+        android:background="@color/white"
+        android:src="@drawable/ic_menu_48dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toRightOf="@id/status_text"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

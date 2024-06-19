@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#F8FFB8"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/item_border">
+
+        <LinearLayout
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tripTo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="to: Costco (Waterloo)" />
+
+            <TextView
+                android:id="@+id/tripFrom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="from: ICON" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/trip_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="06/18/2024"
+                android:textAlignment="viewEnd" />
+
+            <TextView
+                android:id="@+id/trip_driver"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fred"
+                android:textAlignment="viewEnd" />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>
