@@ -7,4 +7,11 @@
     <string name="let_s_get_started">Let\'s Get Started</string>
     <string name="welcome_to_watpool">Welcome to WATPool</string>
     <string name="logo_of_the_app">Logo of the App</string>
+    <string name="watpool">WATPool</string>
+    <string name="join_today">Join today!</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="start">Start</string>
+    <string name="maps">Maps</string>
 </resources>
