@@ -34,4 +34,11 @@
         android:name="com.example.watpool.ui.welcome.WelcomeFragment"
         android:label="@string/title_welcome"
         tools:layout="@layout/fragment_welcome" />
+
+    <fragment
+        android:id="@+id/fragment_create_trip"
+        android:name="com.example.watpool.ui.create_trip.create_trip"
+        android:label="@string/title_welcome"
+        tools:layout="@layout/fragment_create_trip" />
+
 </navigation>
