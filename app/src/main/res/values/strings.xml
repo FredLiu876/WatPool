@@ -8,4 +8,8 @@
     <string name="btn_call_911">Call 911</string>
     <string name="btn_share_trip">Share this trip</string>
     <string name="btn_view_profile">View Profile</string>
+    <string name="title_welcome">Welcome</string>
+    <string name="let_s_get_started">Let\'s Get Started</string>
+    <string name="welcome_to_watpool">Welcome to WATPool</string>
+    <string name="logo_of_the_app">Logo of the App</string>
 </resources>
