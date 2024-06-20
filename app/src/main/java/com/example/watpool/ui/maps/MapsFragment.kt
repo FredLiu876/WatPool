@@ -115,8 +115,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
             // Observe LiveData from the service
             locationService?.getLiveLocationData()?.observe(viewLifecycleOwner, Observer<Location>{
-                    initialLocation = it
-                    initializeMap()
+                //TODO: fix map initialization to not show map until location loaded
+                initialLocation = it
+                initializeMap()
             })
         }
 
@@ -124,7 +125,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             locationBound = false
         }
     }
-    // TODO: Take binding out of specific functions and make it its own private function
+
     // Register for location permissions result
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -132,6 +133,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             // Bind to LocationService, uses Bind_Auto_create to create service if it does not exist
+            // TODO: Take binding out of specific functions and make it its own private function
             val serviceIntent = Intent(requireContext(), LocationService::class.java)
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
         } else {
