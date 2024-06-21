@@ -28,4 +28,22 @@
         android:name="com.example.watpool.ui.maps.MapsFragment"
         android:label="Maps"
         tools:layout="@layout/fragment_maps" />
+    <fragment
+        android:id="@+id/tripDetailFragment"
+        android:name="com.example.watpool.ui.trip_list.TripDetailFragment"
+        android:label="fragment_trip_detail"
+        tools:layout="@layout/fragment_trip_detail" >
+        <argument
+            android:name="tripId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/tripListFragment"
+        android:name="com.example.watpool.ui.trip_list.TripListFragment"
+        android:label="fragment_trip_list"
+        tools:layout="@layout/fragment_trip_list" >
+        <action
+            android:id="@+id/action_tripListFragment_to_tripDetailFragment"
+            app:destination="@id/tripDetailFragment" />
+    </fragment>
 </navigation>

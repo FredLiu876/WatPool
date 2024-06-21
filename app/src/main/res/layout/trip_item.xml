@@ -19,13 +19,13 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tripTo"
+                android:id="@+id/trip_to"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="to: Costco (Waterloo)" />
 
             <TextView
-                android:id="@+id/tripFrom"
+                android:id="@+id/trip_from"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="from: ICON" />
