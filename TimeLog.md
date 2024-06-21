@@ -12,4 +12,4 @@
 | June 17, 2024 |          |       |      |        | 2.5    |       | Welcome Page Setup and Rerouting         |
 | June 17, 2024 |          |       |      |        | 1.5    |       | Login Page Setup and Rerouting           |
 | June 18, 2024 |          |       | 1    |        |        |       | Created initial trip list view           |
-| June 20, 2024 |          |       | 4    |        |        |       | Created trip details and connected parts |
+| June 20, 2024 |          |       | 3    |        |        |       | Created trip details and connected parts |
