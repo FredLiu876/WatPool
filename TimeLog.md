@@ -25,6 +25,8 @@
 |---------------|------|--------------------------------|
 | June 05, 2024 | 0.5  | Inital Project File Creation   |
 | June 10, 2024 | 0.5  | Meeting to discuss D2 feedback |
+| June 20, 2024 | 4    | Created trip creation form     |
+
 
 | Govind        | Time | Task                             |
 |---------------|------|----------------------------------|
