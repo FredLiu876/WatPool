@@ -39,7 +39,7 @@ class DashboardFragment : Fragment() {
         val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
         buttonOpenBottomSheet.setOnClickListener {
             val bottomSheet = SafetyBottomSheetDialog()
-            bottomSheet.show(requireActivity().supportFragmentManager, "exampleBottomSheet")
+            bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
         }
         return root
     }
