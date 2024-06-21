@@ -9,3 +9,4 @@
 | June 10, 2024 |          |       |      | 1      |        |       | Firebase Setup                       |
 | June 12, 2024 | 1        |       |      |        |        |       | Added Google Maps Integration        |
 | June 17, 2024 |          |       |      |        | 2.5    |       | Welcome Page Setup and Rerouting     |
+| June 17, 2024 |          |       |      |        | 1.5    |       | Login Page Setup and Rerouting       |

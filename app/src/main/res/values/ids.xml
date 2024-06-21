@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="email" type="id" />
+    <item name="password" type="id" />
+    <item name="name" type="id" />
+    <item name="start_button" type="id" />
+</resources>
