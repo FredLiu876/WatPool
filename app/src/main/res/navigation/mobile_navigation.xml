@@ -34,4 +34,10 @@
         android:name="com.example.watpool.ui.welcome.WelcomeFragment"
         android:label="@string/title_welcome"
         tools:layout="@layout/fragment_welcome" />
+
+    <fragment
+        android:id="@+id/navigation_login"
+        android:name="com.example.watpool.ui.welcome.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login" />
 </navigation>
