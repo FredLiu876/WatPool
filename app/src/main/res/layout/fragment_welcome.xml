@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#0099FF"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/welcome_to_watpool"
+        android:textSize="24sp"
+        android:textColor="@android:color/white"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginBottom="16dp" />
+
+    <ImageView
+        android:id="@+id/imageCar"
+        android:layout_width="175dp"
+        android:layout_height="175dp"
+        android:contentDescription="@string/logo_of_the_app"
+        android:src="@drawable/ic_logo"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/buttonGetStarted"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/let_s_get_started"
+        android:background="@color/white"
+        android:textColor="@color/white"
+        android:padding="16dp"
+        android:fontFamily="sans-serif-medium" />
+</LinearLayout>
