@@ -12,3 +12,5 @@
 | June 17, 2024 |          |       |      |        | 2.5    |       | Welcome Page Setup and Rerouting       |
 | June 17, 2024 |          |       |      |        | 1.5    |       | Login Page Setup and Rerouting         |
 | June 20, 2024 | 4        |       |      |        |        |       | Added Location Service and updated map |
+| June 21, 2024 |          |       |      |   3    |        |       | Firebase helpers & radius filters      |
+
