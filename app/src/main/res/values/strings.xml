@@ -2,6 +2,7 @@
     <string name="app_name">WatPool</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
+    <string name="title_trips">Trips</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_safety">Safety</string>
     <string name="title_safety_tools">Safety Tools</string>
@@ -19,4 +20,6 @@
     <string name="name">Name</string>
     <string name="start">Start</string>
     <string name="maps">Maps</string>
+    <string name="to_destination">To: %1$s</string>
+    <string name="from_destination">From: %1$s</string>
 </resources>
