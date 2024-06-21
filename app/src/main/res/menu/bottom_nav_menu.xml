@@ -7,9 +7,14 @@
         android:title="@string/title_home" />
 
     <item
-        android:id="@+id/trips_dashboard"
+        android:id="@+id/navigation_dashboard"
         android:icon="@drawable/ic_dashboard_black_24dp"
         android:title="@string/title_dashboard" />
+
+    <item
+        android:id="@+id/tripListFragment"
+        android:icon="@drawable/ic_trips_black"
+        android:title="@string/title_trips" />
 
     <item
         android:id="@+id/navigation_notifications"

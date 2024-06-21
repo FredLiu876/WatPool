@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">WatPool</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Trips</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_trips">Trips</string>
     <string name="title_notifications">Notifications</string>
     <string name="title_welcome">Welcome</string>
     <string name="let_s_get_started">Let\'s Get Started</string>

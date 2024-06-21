@@ -25,6 +25,8 @@ class TripAdapter(private var trips: List<Trip>, private val clickListener: (Tri
             tripFrom.text = context.getString(R.string.from_destination, trip.from)
             tripDriver.text = trip.driver
             tripDate.text = trip.date
+
+            itemView.setOnClickListener { clickListener(trip) }
         }
     }
 

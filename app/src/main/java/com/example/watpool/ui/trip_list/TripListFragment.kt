@@ -28,9 +28,9 @@ class TripListFragment : Fragment() {
 
         // Example data
         trips = listOf(
-            Trip("1", "Trip to Paris", "A wonderful trip to Paris", "06/19/2024", "Fred"),
-            Trip("2", "Trip to New York", "An amazing trip to New York", "06/19/2024", "Fred"),
-            Trip("3", "Trip to Tokyo", "An exciting trip to Tokyo", "06/19/2024", "Fred")
+            Trip("1", "Costco (Waterloo)", "ICON", "06/19/2024", "Fred"),
+            Trip("2", "Conestoga Mall", "ICON", "06/19/2024", "Fred"),
+            Trip("3", "ICON", "Square One", "06/19/2024", "Fred")
         )
 
         // Initialize RecyclerView and Adapter
