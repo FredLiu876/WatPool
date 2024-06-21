@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.navigation_welcome -> {
+                R.id.navigation_welcome, R.id.navigation_login -> {
                     supportActionBar?.hide()
                     navView.visibility = View.GONE
                 }

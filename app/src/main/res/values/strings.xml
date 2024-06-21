@@ -3,8 +3,20 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="title_safety">Safety</string>
+    <string name="title_safety_tools">Safety Tools</string>
+    <string name="btn_call_911">Call 911</string>
+    <string name="btn_share_trip">Share this trip</string>
+    <string name="btn_view_profile">View Profile</string>
     <string name="title_welcome">Welcome</string>
     <string name="let_s_get_started">Let\'s Get Started</string>
     <string name="welcome_to_watpool">Welcome to WATPool</string>
     <string name="logo_of_the_app">Logo of the App</string>
+    <string name="watpool">WATPool</string>
+    <string name="join_today">Join today!</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="start">Start</string>
+    <string name="maps">Maps</string>
 </resources>

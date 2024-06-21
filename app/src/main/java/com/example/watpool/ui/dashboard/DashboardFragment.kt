@@ -10,6 +10,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.databinding.FragmentDashboardBinding
+import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
+import com.google.android.material.button.MaterialButton
+
 
 class DashboardFragment : Fragment() {
 
@@ -31,6 +34,16 @@ class DashboardFragment : Fragment() {
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        val textView: TextView = binding.textDashboard
+        dashboardViewModel.text.observe(viewLifecycleOwner) {
+            textView.text = it
+        }
+
+        val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
+        buttonOpenBottomSheet.setOnClickListener {
+            val bottomSheet = SafetyBottomSheetDialog()
+            bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
+        }
         return root
     }
 
