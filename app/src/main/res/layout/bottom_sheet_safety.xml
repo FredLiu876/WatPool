@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/safety_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title_safety"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/title_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/safety_title"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/safety_tools_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title_safety_tools"
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginHorizontal="16dp"
+        app:layout_constraintTop_toBottomOf="@id/title_divider"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_911"
+        style="?attr/materialIconButtonFilledStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_call_911"
+        android:layout_marginHorizontal="8dp"
+        android:backgroundTint="@color/red"
+        android:textColor="@color/white"
+        app:icon="@drawable/ic_call"
+        app:iconTint="@color/white"
+        app:iconGravity="textStart"
+        app:layout_constraintTop_toBottomOf="@id/safety_tools_title"
+        app:layout_constraintBottom_toTopOf="@id/btn_view_profile"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_view_profile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_view_profile"
+        android:layout_marginBottom="8dp"
+        android:layout_marginHorizontal="8dp"
+        style="?attr/materialButtonOutlinedStyle"
+        app:icon="@drawable/ic_profile"
+        app:iconGravity="textStart"
+        app:layout_constraintTop_toBottomOf="@id/btn_911"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_share_trip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_share_trip"
+        android:layout_marginBottom="8dp"
+        android:layout_marginHorizontal="8dp"
+        style="?attr/materialButtonOutlinedStyle"
+        app:icon="@drawable/ic_share"
+        app:iconGravity="textStart"
+        app:layout_constraintTop_toBottomOf="@id/btn_view_profile"
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

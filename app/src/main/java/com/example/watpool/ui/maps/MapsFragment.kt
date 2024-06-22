@@ -22,6 +22,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.example.watpool.R
 import com.example.watpool.services.LocationService
+import com.example.watpool.databinding.FragmentMapsBinding
+import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -30,6 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.button.MaterialButton
 
 class MapsFragment : Fragment(), OnMapReadyCallback {
 
@@ -39,6 +42,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     // TODO: Cleanup map initilization and location usage
 
+    private var _binding: FragmentMapsBinding? = null
+
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
 
     // Create google map object to be used for modification within fragment
     // Dont show map until location is set
@@ -62,8 +70,17 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_maps, container, false)
+    ): View {
+        _binding = FragmentMapsBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
+        buttonOpenBottomSheet.setOnClickListener {
+            val bottomSheet = SafetyBottomSheetDialog()
+            bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
+        }
+
+        return root
     }
 
     private fun initializeMap(){
