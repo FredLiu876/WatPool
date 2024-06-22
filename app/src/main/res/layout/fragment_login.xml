@@ -37,9 +37,11 @@
         android:layout_height="wrap_content"
         android:autofillHints="Email"
         android:hint="@string/email"
+        android:textColorHint="@color/black"
         android:inputType="textEmailAddress"
-        android:padding="8dp"
+        android:padding="12dp"
         android:background="@android:color/white"
+        android:textColor="@android:color/black"
         android:layout_marginBottom="8dp" />
 
     <EditText
@@ -48,8 +50,10 @@
         android:layout_height="wrap_content"
         android:autofillHints="Password"
         android:hint="@string/password"
-        android:padding="8dp"
+        android:textColorHint="@color/black"
+        android:padding="12dp"
         android:background="@android:color/white"
+        android:textColor="@android:color/black"
         android:inputType="textPassword"
         android:layout_marginBottom="8dp" />
 
@@ -59,15 +63,17 @@
         android:layout_height="wrap_content"
         android:autofillHints="Name"
         android:hint="@string/name"
+        android:textColorHint="@color/black"
         android:inputType="text"
-        android:padding="8dp"
+        android:padding="12dp"
         android:background="@android:color/white"
+        android:textColor="@android:color/black"
         android:layout_marginBottom="16dp" />
 
     <Button
         android:id="@+id/start_button"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/start"
         android:backgroundTint="@android:color/holo_blue_light"
         android:textColor="@android:color/white"
