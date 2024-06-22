@@ -76,7 +76,7 @@
         android:layout_height="wrap_content"
         android:text="@string/start"
         android:backgroundTint="@android:color/holo_blue_light"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:background="@android:color/white"
         android:elevation="4dp"/>
 </LinearLayout>
