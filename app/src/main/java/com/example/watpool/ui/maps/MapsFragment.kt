@@ -6,19 +6,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import com.example.watpool.R
 import com.example.watpool.services.LocationService
@@ -29,10 +29,11 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.button.MaterialButton
+import java.io.IOException
+import java.util.Locale
 
 class MapsFragment : Fragment(), OnMapReadyCallback {
 
@@ -47,12 +48,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    // Search view for maps
+    private lateinit var searchView : SearchView;
 
     // Create google map object to be used for modification within fragment
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
-    private var initialLocation: Location? = null
+    private var userLocation: Location? = null
 
     // Create location service and bool value for to know when to bind it and clean up
     private var locationService: LocationService? = null
@@ -61,8 +64,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private fun moveMapCamera(location: Location){
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-            googleMap.addMarker(MarkerOptions().position(latLng))
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
         }
     }
 
@@ -74,11 +76,34 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         _binding = FragmentMapsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        // Bottom of map safety sheet bindings and listener
         val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
         buttonOpenBottomSheet.setOnClickListener {
             val bottomSheet = SafetyBottomSheetDialog()
             bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
         }
+
+        // Recenter button bindings and listener
+        val recenterButton: MaterialButton = binding.btnRecenter
+        recenterButton.setOnClickListener {
+            userLocation?.let { moveMapCamera(it) }
+        }
+
+        // Top search bar binding and listener
+        searchView = binding.mapSearchView
+        // allow for clicking anywhere on search view to search
+        searchView.isIconified = false
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let { locationSearch(it) }
+                return false
+            }
+            // TODO: possibly implement recommendations based on search results
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
+        })
+        initializeMap()
 
         return root
     }
@@ -89,7 +114,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         mapFragment.getMapAsync { googleMap ->
             map = googleMap
             isMapReady = true
-            initialLocation?.let { moveMapCamera(it) }
+            userLocation?.let { moveMapCamera(it) }
         }
     }
     override fun onMapReady(p0: GoogleMap) {
@@ -132,9 +157,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
             // Observe LiveData from the service
             locationService?.getLiveLocationData()?.observe(viewLifecycleOwner, Observer<Location>{
-                //TODO: fix map initialization to not show map until location loaded
-                initialLocation = it
-                initializeMap()
+                userLocation = it
             })
         }
 
@@ -172,6 +195,29 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ))
+        }
+    }
+
+    // Search for location using geocoder
+    private fun locationSearch(location: String){
+        // locale.getdefault gets users deafult language and other preferences
+        // Use requireContext() to ensure context is not null
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            // Using deprecated function because newer version does not work with out min sdk setup
+            // If min sdk updated replace with geocoder listener setup in android documentation
+            val addressList = geocoder.getFromLocationName(location, 1)
+            if (!addressList.isNullOrEmpty()) {
+                val address = addressList[0]
+                val latLng = LatLng(address.latitude, address.longitude)
+                map?.clear()
+                map?.addMarker(MarkerOptions().position(latLng).title(location))
+                map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            } else {
+                Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }

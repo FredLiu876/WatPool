@@ -22,4 +22,5 @@
     <string name="maps">Maps</string>
     <string name="to_destination">To: %1$s</string>
     <string name="from_destination">From: %1$s</string>
+    <string name="center_location">Recenter Location</string>
 </resources>
