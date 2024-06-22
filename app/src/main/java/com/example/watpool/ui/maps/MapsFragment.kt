@@ -113,6 +113,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
             map = googleMap
+            map?.isBuildingsEnabled = true
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
         }
@@ -210,6 +211,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             if (!addressList.isNullOrEmpty()) {
                 val address = addressList[0]
                 val latLng = LatLng(address.latitude, address.longitude)
+                // Clear map so that old markers dont remain when moving across the map
                 map?.clear()
                 map?.addMarker(MarkerOptions().position(latLng).title(location))
                 map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
