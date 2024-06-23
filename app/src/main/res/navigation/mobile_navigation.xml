@@ -36,8 +36,33 @@
         tools:layout="@layout/fragment_welcome" />
 
     <fragment
+        android:id="@+id/fragment_create_trip"
+        android:name="com.example.watpool.ui.create_trip.create_trip"
+        android:label="@string/title_welcome"
+        tools:layout="@layout/fragment_create_trip" />
+
+    <fragment
         android:id="@+id/navigation_login"
         android:name="com.example.watpool.ui.welcome.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/tripDetailFragment"
+        android:name="com.example.watpool.ui.trip_list.TripDetailFragment"
+        android:label="fragment_trip_detail"
+        tools:layout="@layout/fragment_trip_detail" >
+        <argument
+            android:name="tripId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/tripListFragment"
+        android:name="com.example.watpool.ui.trip_list.TripListFragment"
+        android:label="fragment_trip_list"
+        tools:layout="@layout/fragment_trip_list" >
+        <action
+            android:id="@+id/action_tripListFragment_to_tripDetailFragment"
+            app:destination="@id/tripDetailFragment" />
+    </fragment>-
 </navigation>
