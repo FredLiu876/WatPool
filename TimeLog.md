@@ -6,11 +6,12 @@
 | June 12, 2024 | 1    | Added Google Maps Integration          |
 | June 20, 2024 | 4    | Added Location Service and updated map |
 
-| James         | Time | Task                                 |
-|---------------|------|--------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback       |
-| June 10, 2024 | 2    | Added current trip status bar layout |
-| June 20, 2024 | 3    | Added safety features bottom sheet   |
+| James         | Time | Task                                    |
+|---------------|------|-----------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback          |
+| June 10, 2024 | 2    | Added current trip status bar layout    |
+| June 20, 2024 | 3    | Added safety features bottom sheet      |
+| June 22, 2024 | 5    | Added direction finding from two points |
 
 | Fred          | Time | Task                            |
 |---------------|------|---------------------------------|

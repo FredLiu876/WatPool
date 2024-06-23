@@ -61,7 +61,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     private fun moveMapCamera(location: Location){
         map?.let { googleMap ->
-            val latLng = LatLng(43.467998128, -80.537331184)
+            val latLng = LatLng(location.latitude, location.longitude)
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
             googleMap.addMarker(MarkerOptions().position(latLng))
         }
@@ -81,6 +81,17 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
         }
 
+        val buttonFindRoute: MaterialButton = binding.findRoute
+        buttonFindRoute.setOnClickListener {
+            // Fetch and draw the route once the map is ready
+            val origin = initialLocation // Example origin
+            val destination = LatLng(43.4698361, -80.5164223) // Example destination
+            if (origin != null) {
+                mapsViewModel.fetchDirections((LatLng(origin.latitude, origin.longitude)), destination)
+            }
+            map?.addMarker(MarkerOptions().position(destination))
+        }
+
         mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
             directions?.let {
                 drawRoute(it)
@@ -98,14 +109,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             isMapReady = true
             initialLocation?.let { moveMapCamera(it) }
         }
-
-        // Fetch and draw the route once the map is ready
-        val origin = initialLocation // Example origin
-        val destination = LatLng(43.4698361, -80.5164223) // Example destination
-        if (origin != null) {
-            mapsViewModel.fetchDirections((LatLng(43.467998128, -80.537331184)), destination)
-        }
-        map?.addMarker(MarkerOptions().position(destination))
     }
     override fun onMapReady(p0: GoogleMap) {
         map = p0
@@ -191,7 +194,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun drawRoute(directions: String) {
-        Log.e("directions", directions)
         try {
             val jsonObject = JSONObject(directions)
             val routes = jsonObject.getJSONArray("routes")
@@ -216,7 +218,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                     }
                 }
             }
-
             polylineOptions.addAll(points)
             polylineOptions.width(12f)
             polylineOptions.geodesic(true)
