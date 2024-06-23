@@ -49,20 +49,49 @@
 
     <fragment
         android:id="@+id/tripDetailFragment"
-        android:name="com.example.watpool.ui.trip_list.TripDetailFragment"
+        android:name="com.example.watpool.ui.tripList.TripDetailFragment"
         android:label="fragment_trip_detail"
         tools:layout="@layout/fragment_trip_detail" >
         <argument
             android:name="tripId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_tripDetailFragment_to_tripListFragment"
+            app:destination="@id/tripListFragment"
+            app:popUpTo="@id/tripListFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/tripListFragment"
-        android:name="com.example.watpool.ui.trip_list.TripListFragment"
+        android:name="com.example.watpool.ui.tripList.TripListFragment"
         android:label="fragment_trip_list"
         tools:layout="@layout/fragment_trip_list" >
         <action
-            android:id="@+id/action_tripListFragment_to_tripDetailFragment"
+            android:id="@+id/action_tripListFragment_to_isCurrentTripFragment"
+            app:destination="@id/isCurrentTripFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/isCurrentTripFragment"
+        android:name="com.example.watpool.ui.tripList.IsCurrentTripFragment"
+        android:label="fragment_is_current_trip"
+        tools:layout="@layout/fragment_is_current_trip" >
+        <argument
+            android:name="tripId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_isCurrentTripFragment_to_tripDetailFragment"
             app:destination="@id/tripDetailFragment" />
-    </fragment>-
+        <action
+            android:id="@+id/action_isCurrentTripFragment_to_ongoingTripFragment"
+            app:destination="@id/ongoingTripFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ongoingTripFragment"
+        android:name="com.example.watpool.ui.ongoingTrip.OngoingTripFragment"
+        android:label="fragment_ongoing_trip"
+        tools:layout="@layout/fragment_ongoing_trip" >
+        <argument
+            android:name="tripId"
+            app:argType="string" />
+    </fragment>
 </navigation>

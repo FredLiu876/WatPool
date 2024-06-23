@@ -28,11 +28,12 @@
 | June 10, 2024 | 2    | Added current trip status bar layout |
 | June 20, 2024 | 3    | Added safety features bottom sheet   |
 
-| Fred          | Time | Task                                      |
-|---------------|------|-------------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback            |
-| June 18, 2024 | 1    | Created initial trip list view            |
-| June 20, 2024 | 3    | Created trip details and connected parts  |
+| Fred          | Time | Task                                        |
+|---------------|------|---------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback              |
+| June 18, 2024 | 1    | Created initial trip list view              |
+| June 20, 2024 | 3    | Created trip details and connected parts    |
+| June 23, 2024 | 1    | Connected trip list to trip safety features |
 
 | Sriram        | Time | Task                           |
 |---------------|------|--------------------------------|
