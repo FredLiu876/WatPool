@@ -25,6 +25,7 @@
 | June 10, 2024 | 0.5  | Meeting to discuss D2 feedback |
 | June 10, 2024 | 1    | Firebase Setup                 |
 | June 21, 2024 | 3    | Firebase Helpers Part 1        |
+| June 21, 2024 | 1.5  | Firebase Optimizations         |
 
 | Arham         | Time | Task                           |
 |---------------|------|--------------------------------|
