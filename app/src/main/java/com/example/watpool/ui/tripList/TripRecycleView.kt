@@ -1,4 +1,4 @@
-package com.example.watpool.ui.trip_list
+package com.example.watpool.ui.tripList
 
 import com.example.watpool.R
 import android.view.LayoutInflater

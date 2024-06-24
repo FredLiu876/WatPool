@@ -1,4 +1,4 @@
-package com.example.watpool.ui.trip_list
+package com.example.watpool.ui.tripList
 
 import android.annotation.SuppressLint
 import com.example.watpool.R
@@ -10,7 +10,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 
 class TripDetailFragment : Fragment() {
 
@@ -44,7 +43,8 @@ class TripDetailFragment : Fragment() {
 
         backButton.setOnClickListener {
             // Navigate back to previous fragment
-            findNavController().navigateUp()
+            val action = TripDetailFragmentDirections.actionTripDetailFragmentToTripListFragment()
+            findNavController().navigate(action)
         }
     }
 }
