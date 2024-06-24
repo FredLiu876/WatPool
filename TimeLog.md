@@ -14,7 +14,7 @@
 | June 18, 2024 |          |       | 1    |        |        |       | Created initial trip list view           |
 | June 20, 2024 |          |       | 3    |        |        |       | Created trip details and connected parts |
 | June 21, 2024 |          |       |      | 3      |        |       | Firebase Helpers Part 1                  |
-
+| June 23, 2024 |          |       |      | 1.5    |        |       | Firebase Optimizations                   |
 
 | Domenico      | Time | Task                                   |
 |---------------|------|----------------------------------------|
