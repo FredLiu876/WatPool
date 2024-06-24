@@ -1,8 +1,10 @@
 package com.example.watpool.services.firebase_services
 
+import android.util.Log
 import com.example.watpool.services.interfaces.CoordinateService
 import com.example.watpool.services.models.Coordinate
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
@@ -45,15 +47,41 @@ class FirebaseCoordinateService: CoordinateService {
         return coordinatesRef.child(id).setValue(coordinate)
     }
 
-    override fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<DataSnapshot> {
+    // TODO fix old fetch coordinates as it returns all coordinates not filtered
+    /*override fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<DataSnapshot> {
         return coordinatesRef.get().addOnSuccessListener { snapshot ->
             snapshot.children.filter { coordSnapshot ->
                 val coord = coordSnapshot.getValue(Coordinate::class.java)
                 coord?.let {
                     val distance = calculateDistance(latitude, longitude, it.latitude, it.longitude)
+                    Log.e("DISTANCE CALCULATED", "${distance}")
+                    Log.e("DISTANCE CALCULATED", "${radiusInKm}")
                     distance <= radiusInKm
                 } ?: false
             }
         }
+    }*/
+
+    // TODO decide if we want to keep this function as is or
+    override fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<List<Coordinate>> {
+        val taskCompletionSource = TaskCompletionSource<List<Coordinate>>()
+        coordinatesRef.get().addOnSuccessListener { snapshot ->
+            // Filter coordinates by distance
+            val filteredCoordinates = snapshot.children.mapNotNull { coordSnapshot ->
+                val coord = coordSnapshot.getValue(Coordinate::class.java)
+                coord?.takeIf {
+                    val distance = calculateDistance(latitude, longitude, it.latitude, it.longitude)
+                    distance <= radiusInKm
+                }
+            }
+            // Set the result for the TaskCompletionSource
+            taskCompletionSource.setResult(filteredCoordinates)
+        }.addOnFailureListener { exception ->
+            // Set the exception for the TaskCompletionSource in case of failure
+            taskCompletionSource.setException(exception)
+        }
+
+        return taskCompletionSource.task
     }
+
 }

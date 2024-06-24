@@ -15,6 +15,7 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -23,21 +24,25 @@ import androidx.lifecycle.Observer
 import com.example.watpool.R
 import com.example.watpool.services.LocationService
 import com.example.watpool.databinding.FragmentMapsBinding
+import com.example.watpool.services.FirebaseService
+import com.example.watpool.services.models.Coordinate
 import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.slider.Slider
 import java.io.IOException
 import java.util.Locale
 
 class MapsFragment : Fragment(), OnMapReadyCallback {
 
-    // TODO: Create better map initilization to display user current location
+    // TODO: Create better map initialization to display user current location
     // TODO: Create button to recenter map on user location
     // TODO: Ability to create markers for user and other functionality
 
@@ -55,11 +60,19 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
+
+    // Stored locations
     private var userLocation: Location? = null
 
     // Create location service and bool value for to know when to bind it and clean up
     private var locationService: LocationService? = null
     private var locationBound: Boolean = false
+
+    // Coordinate service for fetching locations
+    private var firebaseService: FirebaseService? = null
+
+    // Search radius for getting postings
+    private var searchRadius : Double = 1.0
 
     private fun moveMapCamera(location: Location){
         map?.let { googleMap ->
@@ -67,6 +80,19 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
         }
     }
+    private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
+        val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
+        postings?.addOnSuccessListener { dataSnapshot ->
+            for (snapshot in dataSnapshot){
+                val postLatLng = LatLng(snapshot.latitude, snapshot.longitude)
+                map?.addMarker(MarkerOptions().position(postLatLng).title(snapshot.id))
+            }
+
+        }?.addOnFailureListener {
+            Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,8 +112,34 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
-            userLocation?.let { moveMapCamera(it) }
+            userLocation?.let {
+                moveMapCamera(it)
+            }
+
         }
+
+        val searchButton: MaterialButton = binding.btnSearch
+        searchButton.setOnClickListener {
+            val cameraPosition = map?.cameraPosition?.target
+            cameraPosition?.let {
+                val latLng = LatLng(it.latitude, it.longitude)
+                showPostingsInRadius(latLng, searchRadius)
+            }
+        }
+
+        val sliderLabel : TextView = binding.textRadius
+
+        val radiusSlider: Slider = binding.sliderRadius
+        searchRadius = radiusSlider.value.toDouble()
+        radiusSlider.addOnChangeListener { _, value, _ ->
+            searchRadius = value.toDouble()
+            drawRadius()
+            sliderLabel.text = buildString {
+                append("$searchRadius")
+                append("km")
+            }
+        }
+
 
         // Top search bar binding and listener
         searchView = binding.mapSearchView
@@ -96,6 +148,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let { locationSearch(it) }
+
                 return false
             }
             // TODO: possibly implement recommendations based on search results
@@ -103,19 +156,49 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 return false
             }
         })
-        initializeMap()
 
+        initializeMap()
         return root
     }
 
+    private fun drawRadius(){
+        val cameraPosition = map?.cameraPosition?.target
+        cameraPosition?.let {
+            map?.clear()
+            map?.addCircle(
+                CircleOptions()
+                    .center(it)
+                    .radius(searchRadius * 1000)
+                    .strokeColor(0xFF0000FF.toInt())
+                    .fillColor(0x220000FF)
+                    .strokeWidth(5f)
+            )
+            map?.addCircle(
+                CircleOptions()
+                    .center(it)
+                    .radius(10.0)
+                    .strokeColor(0xFF0000FF.toInt())
+                    .fillColor(0x220000FF)
+                    .strokeWidth(10f)
+            )
+        }
+
+
+    }
     private fun initializeMap(){
         checkLocationPermissions()
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
             map = googleMap
-            map?.isBuildingsEnabled = true
+            googleMap.isBuildingsEnabled = true
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
+            googleMap.setOnCameraIdleListener {
+                drawRadius()
+            }
+            googleMap.setOnCameraMoveListener {
+                googleMap.clear()
+            }
         }
     }
     override fun onMapReady(p0: GoogleMap) {
@@ -130,23 +213,39 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
             locationBound = true
         }
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
     }
     // Stop location service if still bound
     override fun onStop() {
         super.onStop()
         if (locationBound) {
             requireContext().unbindService(locationConnection)
+            requireContext().unbindService(firebaseConnection)
             locationBound = false
         }
     }
-    // Stop location service if still bound
+    // Stop services if still bound
     override fun onDestroyView() {
         super.onDestroyView()
+        requireContext().unbindService(firebaseConnection)
         if (locationBound) {
             requireContext().unbindService(locationConnection)
             locationBound = false
         }
     }
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            TODO("Not yet implemented")
+        }
+    }
+
 
     // TODO: cleanup location connection to use location service data properly
     // Create service connection to get location data to maps

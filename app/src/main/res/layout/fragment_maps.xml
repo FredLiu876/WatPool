@@ -55,6 +55,20 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_search"
+        style="@style/Widget.Material3.Button.IconButton.Filled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="216dp"
+        android:contentDescription="@string/center_location"
+        app:icon="@drawable/ic_search"
+        app:iconSize="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
     <com.google.android.material.slider.Slider
         android:id="@+id/slider_radius"
         android:layout_width="250dp"
@@ -62,6 +76,10 @@
         android:layout_marginStart="15dp"
         android:layout_marginBottom="72dp"
         android:elevation="5dp"
+        android:valueFrom="1.0"
+        android:valueTo="10.0"
+        android:stepSize="0.5"
+        android:value="1.0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/text_radius"
         app:layout_constraintRight_toRightOf="parent"
