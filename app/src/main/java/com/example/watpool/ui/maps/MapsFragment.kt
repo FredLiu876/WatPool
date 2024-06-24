@@ -64,6 +64,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
+    private var findingRoute = false
 
     // Stored locations
     private var userLocation: Location? = null
@@ -91,7 +92,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 val postLatLng = LatLng(snapshot.latitude, snapshot.longitude)
                 map?.addMarker(MarkerOptions().position(postLatLng).title(snapshot.id))
             }
-
         }?.addOnFailureListener {
             Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
         }
@@ -116,6 +116,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
+            findingRoute = false
+            drawRadius()
             userLocation?.let {
                 moveMapCamera(it)
             }
@@ -124,6 +126,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
+            findingRoute = false
+            drawRadius()
             val cameraPosition = map?.cameraPosition?.target
             cameraPosition?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
@@ -136,11 +140,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val radiusSlider: Slider = binding.sliderRadius
         searchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
+            findingRoute = false
             searchRadius = value.toDouble()
             drawRadius()
             sliderLabel.text = buildString {
                 append("$searchRadius")
-                append("km")
+                append(" km")
             }
         }
 
@@ -151,26 +156,38 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         searchView.isIconified = false
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
+                findingRoute = false
                 query?.let { locationSearch(it) }
-
                 return false
             }
             // TODO: possibly implement recommendations based on search results
             override fun onQueryTextChange(newText: String?): Boolean {
+                findingRoute = false
                 return false
             }
         })
 
-        initializeMap()
+
         val buttonFindRoute: MaterialButton = binding.findRoute
         buttonFindRoute.setOnClickListener {
+            findingRoute = true
             // Fetch and draw the route once the map is ready
             val origin =  map?.cameraPosition?.target// Example origin
             val destination = LatLng(43.4698361, -80.5164223) // Example destination
-            if (origin != null) {
-                mapsViewModel.fetchDirections((LatLng(origin.latitude, origin.longitude)), destination)
+            origin?.let {
+                val originLatLng = LatLng(origin.latitude, origin.longitude)
+                mapsViewModel.fetchDirections(
+                    (LatLng(origin.latitude, origin.longitude)),
+                    destination
+                )
+                map?.clear()
+                map?.addMarker(MarkerOptions().position(originLatLng))
             }
             map?.addMarker(MarkerOptions().position(destination))
+            map?.let { googleMap ->
+                val latLng = LatLng(destination.latitude, destination.longitude)
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+            }
         }
 
         mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
@@ -179,6 +196,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
+        initializeMap()
         return root
     }
 
@@ -215,10 +233,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
             googleMap.setOnCameraIdleListener {
-                drawRadius()
-            }
-            googleMap.setOnCameraMoveListener {
-                googleMap.clear()
+                if(!findingRoute){
+                    drawRadius()
+                }
             }
         }
     }
@@ -334,7 +351,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 // Clear map so that old markers dont remain when moving across the map
                 map?.clear()
                 map?.addMarker(MarkerOptions().position(latLng).title(location))
-                map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
             } else {
                 Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
             }
