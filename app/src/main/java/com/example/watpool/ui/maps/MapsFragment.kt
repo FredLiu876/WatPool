@@ -75,6 +75,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     // Coordinate service for fetching locations
     private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
 
     // Search radius for getting postings
     private var searchRadius : Double = 1.0
@@ -256,23 +257,30 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
         val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
         requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
     }
     // Stop location service if still bound
     override fun onStop() {
         super.onStop()
         if (locationBound) {
             requireContext().unbindService(locationConnection)
-            requireContext().unbindService(firebaseConnection)
             locationBound = false
+        }
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
         }
     }
     // Stop services if still bound
     override fun onDestroyView() {
         super.onDestroyView()
-        requireContext().unbindService(firebaseConnection)
         if (locationBound) {
             requireContext().unbindService(locationConnection)
             locationBound = false
+        }
+        if(firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
         }
     }
 
@@ -280,10 +288,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as FirebaseService.FirebaseBinder
             firebaseService = binder.getService()
+            firebaseBound = true
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            TODO("Not yet implemented")
+            firebaseBound = false
         }
     }
 
