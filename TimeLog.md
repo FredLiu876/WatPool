@@ -5,6 +5,9 @@
 | June 10, 2024 | 0.5  | Meeting to discuss D2 feedback         |
 | June 12, 2024 | 1    | Added Google Maps Integration          |
 | June 20, 2024 | 4    | Added Location Service and updated map |
+| June 20, 2024 | 3    | Added Search Address                   |
+| June 20, 2024 | 3    | Added Radius Search and updated map    |
+| June 20, 2024 | 0.5  | Integrated radius search with db       |
 
 | James         | Time | Task                                    |
 |---------------|------|-----------------------------------------|

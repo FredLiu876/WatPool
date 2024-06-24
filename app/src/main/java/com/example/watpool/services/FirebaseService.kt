@@ -9,12 +9,14 @@ import com.example.watpool.services.firebase_services.FirebaseDriverService
 import com.example.watpool.services.interfaces.AuthService
 import com.example.watpool.services.interfaces.CoordinateService
 import com.example.watpool.services.interfaces.DriverService
+import com.example.watpool.services.models.Coordinate
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 
 
@@ -53,7 +55,7 @@ class FirebaseService : Service() {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }
 
-    fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<QuerySnapshot> {
+    fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<MutableList<DocumentSnapshot>> {
         return coordinateService.fetchCoordinatesByLocation(latitude, longitude, radiusInKm)
     }
 

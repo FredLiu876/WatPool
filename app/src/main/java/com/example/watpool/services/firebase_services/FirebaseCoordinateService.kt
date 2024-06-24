@@ -1,5 +1,6 @@
 package com.example.watpool.services.firebase_services
 
+import android.util.Log
 import com.example.watpool.services.interfaces.CoordinateService
 import com.example.watpool.services.models.Coordinate
 import com.firebase.geofire.GeoFireUtils
@@ -80,4 +81,5 @@ class FirebaseCoordinateService: CoordinateService {
             }
 
     }
+
 }

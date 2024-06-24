@@ -10,7 +10,22 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/mapSearchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="@color/design_default_color_primary"
+        android:elevation="5dp"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search Address..."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/find_route"
@@ -35,6 +50,65 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:iconSize="24dp"
+        android:contentDescription="@string/title_safety"
         />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_recenter"
+        style="@style/Widget.Material3.Button.IconButton.Filled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="144dp"
+        android:contentDescription="@string/center_location"
+        app:icon="@drawable/ic_center_location"
+        app:iconSize="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_search"
+        style="@style/Widget.Material3.Button.IconButton.Filled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="216dp"
+        android:contentDescription="@string/center_location"
+        app:icon="@drawable/ic_search"
+        app:iconSize="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slider_radius"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="15dp"
+        android:elevation="5dp"
+        android:stepSize="0.5"
+        android:value="0.5"
+        android:valueFrom="0.5"
+        android:valueTo="20.0"
+        app:layout_constraintTop_toBottomOf="@id/mapSearchView"
+        app:layout_constraintEnd_toStartOf="@+id/text_radius"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_radius"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:labelFor="@id/slider_radius"
+        android:text="@string/default_radius"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toTopOf="@id/slider_radius"
+        app:layout_constraintStart_toEndOf="@+id/slider_radius"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/slider_radius"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

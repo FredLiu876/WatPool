@@ -1,5 +1,6 @@
 package com.example.watpool.services.interfaces
 
+import com.example.watpool.services.models.Coordinate
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentReference

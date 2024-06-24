@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
@@ -13,30 +14,38 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentMapsBinding
+import com.example.watpool.services.FirebaseService
+import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
 import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.slider.Slider
+import java.io.IOException
+import java.util.Locale
 import org.json.JSONObject
 
 
 class MapsFragment : Fragment(), OnMapReadyCallback {
 
-    // TODO: Create better map initilization to display user current location
+    // TODO: Create better map initialization to display user current location
     // TODO: Create button to recenter map on user location
     // TODO: Ability to create markers for user and other functionality
 
@@ -47,25 +56,51 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    // Search view for maps
+    private lateinit var searchView : SearchView;
     private val mapsViewModel: MapsViewModel by viewModels()
 
     // Create google map object to be used for modification within fragment
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
-    private var initialLocation: Location? = null
+    private var findingRoute = false
+
+    // Stored locations
+    private var userLocation: Location? = null
 
     // Create location service and bool value for to know when to bind it and clean up
     private var locationService: LocationService? = null
     private var locationBound: Boolean = false
 
+    // Coordinate service for fetching locations
+    private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
+
+    // Search radius for getting postings
+    private var searchRadius : Double = 1.0
+
     private fun moveMapCamera(location: Location){
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-            googleMap.addMarker(MarkerOptions().position(latLng))
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
         }
     }
+    private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
+        val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
+        postings?.addOnSuccessListener { documentSnapshot ->
+            for (document in documentSnapshot) {
+                val dataModel = document.toObject(Coordinate::class.java)
+                if (dataModel != null) {
+                    val postLatLng = LatLng(dataModel.latitude, dataModel.longitude)
+                    map?.addMarker(MarkerOptions().position(postLatLng).title(dataModel.id))
+                }
+            }
+        }?.addOnFailureListener {
+            Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -75,21 +110,88 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         _binding = FragmentMapsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        // Bottom of map safety sheet bindings and listener
         val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
         buttonOpenBottomSheet.setOnClickListener {
             val bottomSheet = SafetyBottomSheetDialog()
             bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
         }
 
+        // Recenter button bindings and listener
+        val recenterButton: MaterialButton = binding.btnRecenter
+        recenterButton.setOnClickListener {
+            findingRoute = false
+            drawRadius()
+            userLocation?.let {
+                moveMapCamera(it)
+            }
+
+        }
+
+        val searchButton: MaterialButton = binding.btnSearch
+        searchButton.setOnClickListener {
+            findingRoute = false
+            drawRadius()
+            val cameraPosition = map?.cameraPosition?.target
+            cameraPosition?.let {
+                val latLng = LatLng(it.latitude, it.longitude)
+                showPostingsInRadius(latLng, searchRadius)
+            }
+        }
+
+        val sliderLabel : TextView = binding.textRadius
+
+        val radiusSlider: Slider = binding.sliderRadius
+        searchRadius = radiusSlider.value.toDouble()
+        radiusSlider.addOnChangeListener { _, value, _ ->
+            findingRoute = false
+            searchRadius = value.toDouble()
+            drawRadius()
+            sliderLabel.text = buildString {
+                append("$searchRadius")
+                append(" km")
+            }
+        }
+
+
+        // Top search bar binding and listener
+        searchView = binding.mapSearchView
+        // allow for clicking anywhere on search view to search
+        searchView.isIconified = false
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                findingRoute = false
+                query?.let { locationSearch(it) }
+                return false
+            }
+            // TODO: possibly implement recommendations based on search results
+            override fun onQueryTextChange(newText: String?): Boolean {
+                findingRoute = false
+                return false
+            }
+        })
+
+
         val buttonFindRoute: MaterialButton = binding.findRoute
         buttonFindRoute.setOnClickListener {
+            findingRoute = true
             // Fetch and draw the route once the map is ready
-            val origin = initialLocation // Example origin
+            val origin =  map?.cameraPosition?.target// Example origin
             val destination = LatLng(43.4698361, -80.5164223) // Example destination
-            if (origin != null) {
-                mapsViewModel.fetchDirections((LatLng(origin.latitude, origin.longitude)), destination)
+            origin?.let {
+                val originLatLng = LatLng(origin.latitude, origin.longitude)
+                mapsViewModel.fetchDirections(
+                    (LatLng(origin.latitude, origin.longitude)),
+                    destination
+                )
+                map?.clear()
+                map?.addMarker(MarkerOptions().position(originLatLng))
             }
             map?.addMarker(MarkerOptions().position(destination))
+            map?.let { googleMap ->
+                val latLng = LatLng(destination.latitude, destination.longitude)
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+            }
         }
 
         mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
@@ -98,16 +200,47 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
+        initializeMap()
         return root
     }
 
+    private fun drawRadius(){
+        val cameraPosition = map?.cameraPosition?.target
+        cameraPosition?.let {
+            map?.clear()
+            map?.addCircle(
+                CircleOptions()
+                    .center(it)
+                    .radius(searchRadius * 1000)
+                    .strokeColor(0xFF0000FF.toInt())
+                    .fillColor(0x220000FF)
+                    .strokeWidth(5f)
+            )
+            map?.addCircle(
+                CircleOptions()
+                    .center(it)
+                    .radius(10.0)
+                    .strokeColor(0xFF0000FF.toInt())
+                    .fillColor(0x220000FF)
+                    .strokeWidth(10f)
+            )
+        }
+
+
+    }
     private fun initializeMap(){
         checkLocationPermissions()
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync { googleMap ->
             map = googleMap
+            googleMap.isBuildingsEnabled = true
             isMapReady = true
-            initialLocation?.let { moveMapCamera(it) }
+            userLocation?.let { moveMapCamera(it) }
+            googleMap.setOnCameraIdleListener {
+                if(!findingRoute){
+                    drawRadius()
+                }
+            }
         }
     }
     override fun onMapReady(p0: GoogleMap) {
@@ -122,6 +255,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
             locationBound = true
         }
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
     }
     // Stop location service if still bound
     override fun onStop() {
@@ -130,15 +266,36 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             requireContext().unbindService(locationConnection)
             locationBound = false
         }
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
     }
-    // Stop location service if still bound
+    // Stop services if still bound
     override fun onDestroyView() {
         super.onDestroyView()
         if (locationBound) {
             requireContext().unbindService(locationConnection)
             locationBound = false
         }
+        if(firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
     }
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+            firebaseBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            firebaseBound = false
+        }
+    }
+
 
     // TODO: cleanup location connection to use location service data properly
     // Create service connection to get location data to maps
@@ -150,9 +307,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
             // Observe LiveData from the service
             locationService?.getLiveLocationData()?.observe(viewLifecycleOwner, Observer<Location>{
-                //TODO: fix map initialization to not show map until location loaded
-                initialLocation = it
-                initializeMap()
+                userLocation = it
             })
         }
 
@@ -193,6 +348,29 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    // Search for location using geocoder
+    private fun locationSearch(location: String){
+        // locale.getdefault gets users deafult language and other preferences
+        // Use requireContext() to ensure context is not null
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            // Using deprecated function because newer version does not work with out min sdk setup
+            // If min sdk updated replace with geocoder listener setup in android documentation
+            val addressList = geocoder.getFromLocationName(location, 1)
+            if (!addressList.isNullOrEmpty()) {
+                val address = addressList[0]
+                val latLng = LatLng(address.latitude, address.longitude)
+                // Clear map so that old markers dont remain when moving across the map
+                map?.clear()
+                map?.addMarker(MarkerOptions().position(latLng).title(location))
+                map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+            } else {
+                Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: IOException) {
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
     private fun drawRoute(directions: String) {
         try {
             val jsonObject = JSONObject(directions)
