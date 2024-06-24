@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.tripList.TripDetailFragment">
-
+    tools:context=".ui.ongoingTrip.OngoingTripFragment">
     <TextView
         android:id="@+id/trip_id_text_view"
         android:layout_width="80dp"
@@ -17,14 +16,16 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_editor_absoluteY="60dp"
         tools:ignore="MissingConstraints" />
-
-    <Button
-        android:id="@+id/back_button"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/trip_id_text_view"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_marginBottom="72dp"
+        android:layout_marginHorizontal="16dp"
+        app:icon="@drawable/ic_info"
+        style="@style/Widget.Material3.Button.IconButton.Filled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:iconSize="24dp"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

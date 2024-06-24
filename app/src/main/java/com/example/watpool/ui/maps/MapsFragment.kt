@@ -8,10 +8,9 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
-import androidx.fragment.app.Fragment
-
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,14 +19,15 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.example.watpool.R
-import com.example.watpool.services.LocationService
 import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
+import com.example.watpool.services.LocationService
 import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
-
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -35,10 +35,13 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import java.io.IOException
 import java.util.Locale
+import org.json.JSONObject
+
 
 class MapsFragment : Fragment(), OnMapReadyCallback {
 
@@ -55,6 +58,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
     // Search view for maps
     private lateinit var searchView : SearchView;
+    private val mapsViewModel: MapsViewModel by viewModels()
 
     // Create google map object to be used for modification within fragment
     // Dont show map until location is set
@@ -158,6 +162,23 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         })
 
         initializeMap()
+        val buttonFindRoute: MaterialButton = binding.findRoute
+        buttonFindRoute.setOnClickListener {
+            // Fetch and draw the route once the map is ready
+            val origin =  map?.cameraPosition?.target// Example origin
+            val destination = LatLng(43.4698361, -80.5164223) // Example destination
+            if (origin != null) {
+                mapsViewModel.fetchDirections((LatLng(origin.latitude, origin.longitude)), destination)
+            }
+            map?.addMarker(MarkerOptions().position(destination))
+        }
+
+        mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
+            directions?.let {
+                drawRoute(it)
+            }
+        })
+
         return root
     }
 
@@ -319,6 +340,39 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private fun drawRoute(directions: String) {
+        try {
+            val jsonObject = JSONObject(directions)
+            val routes = jsonObject.getJSONArray("routes")
+            val points = ArrayList<LatLng>()
+            val polylineOptions = PolylineOptions()
+
+            for (i in 0 until routes.length()) {
+                val route = routes.getJSONObject(i)
+                val legs = route.getJSONArray("legs")
+
+                for (j in 0 until legs.length()) {
+                    val leg = legs.getJSONObject(j)
+                    val steps = leg.getJSONArray("steps")
+
+                    for (k in 0 until steps.length()) {
+                        val step = steps.getJSONObject(k)
+                        val point = step.getJSONObject("start_location")
+                        val lat: Double = point.getDouble("lat")
+                        val lng: Double = point.getDouble("lng")
+                        val position = LatLng(lat, lng)
+                        points.add(position)
+                    }
+                }
+            }
+            polylineOptions.addAll(points)
+            polylineOptions.width(12f)
+            polylineOptions.geodesic(true)
+            map?.addPolyline(polylineOptions)
+        } catch (e: Exception) {
+            Log.e("Draw route Exception", e.toString())
         }
     }
 }

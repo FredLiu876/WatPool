@@ -1,4 +1,4 @@
-package com.example.watpool.ui.trip_list
+package com.example.watpool.ui.tripList
 
 import com.example.watpool.R
 import android.os.Bundle
@@ -35,7 +35,7 @@ class TripListFragment : Fragment() {
 
         // Initialize RecyclerView and Adapter
         tripAdapter = TripAdapter(trips) { trip ->
-            val action = TripListFragmentDirections.actionTripListFragmentToTripDetailFragment(trip.id)
+            val action = TripListFragmentDirections.actionTripListFragmentToIsCurrentTripFragment(trip.id)
             findNavController().navigate(action)
         }
 

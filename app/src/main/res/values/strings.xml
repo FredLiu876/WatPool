@@ -24,4 +24,5 @@
     <string name="from_destination">From: %1$s</string>
     <string name="center_location">Recenter Location</string>
     <string name="default_radius">5 km</string>
+    <string name="find_route">Find Route</string>
 </resources>
