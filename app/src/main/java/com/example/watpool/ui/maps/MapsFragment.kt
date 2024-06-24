@@ -87,10 +87,13 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     }
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
         val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
-        postings?.addOnSuccessListener { dataSnapshot ->
-            for (snapshot in dataSnapshot){
-                val postLatLng = LatLng(snapshot.latitude, snapshot.longitude)
-                map?.addMarker(MarkerOptions().position(postLatLng).title(snapshot.id))
+        postings?.addOnSuccessListener { documentSnapshot ->
+            for (document in documentSnapshot) {
+                val dataModel = document.toObject(Coordinate::class.java)
+                if (dataModel != null) {
+                    val postLatLng = LatLng(dataModel.latitude, dataModel.longitude)
+                    map?.addMarker(MarkerOptions().position(postLatLng).title(dataModel.id))
+                }
             }
         }?.addOnFailureListener {
             Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
