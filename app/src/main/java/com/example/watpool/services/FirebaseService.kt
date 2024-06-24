@@ -14,11 +14,12 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.QuerySnapshot
 
 
 // TODO: Add helper functions here to interact with the DB
 class FirebaseService : Service() {
-    private val database = Firebase.database
     private lateinit var authService: AuthService
     private lateinit var driverService: DriverService
     private lateinit var coordinateService: CoordinateService
@@ -48,15 +49,15 @@ class FirebaseService : Service() {
         return authService.signUp(email, password)
     }
 
-    fun fetchCoordinatesByDriverId(driverId: String): Task<DataSnapshot> {
+    fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }
 
-    fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<DataSnapshot> {
+    fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByLocation(latitude, longitude, radiusInKm)
     }
 
-    fun addCoordinate(driverId: String, latitude: Double, longitude: Double): Task<Void> {
+    fun addCoordinate(driverId: String, latitude: Double, longitude: Double): Task<DocumentReference> {
         return coordinateService.addCoordinate(driverId, latitude, longitude)
     }
 
