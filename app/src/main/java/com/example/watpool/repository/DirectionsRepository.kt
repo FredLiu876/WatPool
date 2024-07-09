@@ -2,6 +2,7 @@ package com.example.watpool.repository
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.example.watpool.BuildConfig
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,7 +21,7 @@ class DirectionsRepository {
         // destination of route
         val destinationStr = "destination=${dest.latitude},${dest.longitude}"
         // api key need to add api key
-        val key = "key="
+        val key = "key=${BuildConfig.MAPS_API_KEY}"
         // Sensor enabled
         val sensor = "sensor=false"
         val mode = "mode=driving"
