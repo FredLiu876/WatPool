@@ -29,6 +29,11 @@
 | June 10, 2024 | 1    | Firebase Setup                 |
 | June 21, 2024 | 3    | Firebase Helpers Part 1        |
 | June 21, 2024 | 1.5  | Firebase Optimizations         |
+| June 22, 2024 | 0.5  | D3 Presentation Prep           |
+| July 08, 2024 | 1.5  | Data Model Planning            |
+| July 09, 2024 | 0.5  | Meeting for D4                 |
+| July 09, 2024 | 1.0  | User DB Service                |
+| July 10, 2024 | 1.0  | Trips DB Service               |
 
 | Arham         | Time | Task                           |
 |---------------|------|--------------------------------|
