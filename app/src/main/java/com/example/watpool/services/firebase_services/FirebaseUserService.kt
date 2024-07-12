@@ -17,6 +17,9 @@ class FirebaseUserService: UserService {
     private val database = Firebase.firestore
     private val usersRef: CollectionReference = database.collection("users")
 
+    override fun fetchUsersById(id: String): Task<QuerySnapshot> {
+        return usersRef.whereEqualTo("id", id).get()
+    }
     override fun fetchUsersByUsername(username: String): Task<QuerySnapshot> {
         return usersRef.whereEqualTo("username", username).get()
     }

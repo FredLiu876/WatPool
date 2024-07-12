@@ -76,6 +76,9 @@ class FirebaseService : Service() {
         return coordinateService.addCoordinate(driverId, latitude, longitude, location)
     }
 
+    fun fetchUsersById(id: String): Task<QuerySnapshot> {
+        return userService.fetchUsersById(id)
+    }
     fun fetchUsersByUsername(username: String) : Task<QuerySnapshot> {
         return userService.fetchUsersByUsername(username)
     }
