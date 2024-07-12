@@ -121,8 +121,8 @@ class FirebaseService : Service() {
 
                                 document.reference.update(
                                     mapOf(
-                                        "starting_location" to startLocation,
-                                        "ending_location" to endLocation
+                                        "to" to startLocation,
+                                        "from" to endLocation
                                     )
                                 )
                                 document
