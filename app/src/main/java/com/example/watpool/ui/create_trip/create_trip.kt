@@ -42,8 +42,8 @@ class create_trip : Fragment() {
 
     private lateinit var pickupSearchView: SearchView
     private lateinit var pickupPlacesFragment: PlacesFragment
-//    private lateinit var destinationSearchView: SearchView
-//    private lateinit var destinationPlacesFragment: PlacesFragment
+    private lateinit var destinationSearchView: SearchView
+    private lateinit var destinationPlacesFragment: PlacesFragment
     private var isSelectionInProgress = false
 
 
@@ -60,11 +60,14 @@ class create_trip : Fragment() {
 
         if (savedInstanceState == null) {
             pickupPlacesFragment = PlacesFragment()
+            destinationPlacesFragment = PlacesFragment()
             childFragmentManager.commit {
                 add(R.id.places_fragment_container, pickupPlacesFragment)
+                add(R.id.places_fragment_container2, destinationPlacesFragment)
             }
         } else {
             pickupPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container) as PlacesFragment
+            destinationPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container2) as PlacesFragment
         }
 
         placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
@@ -88,11 +91,24 @@ class create_trip : Fragment() {
         pickupSearchView.setQueryHint("Enter pickup location");
         pickupSearchView.isIconified = false
 
+        destinationSearchView = binding.destination
+        destinationSearchView.setQueryHint("Enter destination");
+        destinationSearchView.isIconified = false
+
+
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
-            isSelectionInProgress = true
-            pickupSearchView.setQuery(prediction, false)
-            pickupPlacesFragment.clearList()
-            isSelectionInProgress = false
+            if (pickupSearchView.hasFocus()) {
+                isSelectionInProgress = true
+                pickupSearchView.setQuery(prediction, false)
+                pickupPlacesFragment.clearList()
+                isSelectionInProgress = false
+            }
+            if (destinationSearchView.hasFocus()) {
+                isSelectionInProgress = true
+                destinationSearchView.setQuery(prediction, false)
+                destinationPlacesFragment.clearList()
+                isSelectionInProgress = false
+            }
         })
 
         pickupSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
@@ -118,10 +134,30 @@ class create_trip : Fragment() {
             }
         })
 
-        // Observe ViewModel LiveData and update UI accordingly
-        viewModel.destination.observe(viewLifecycleOwner, Observer {
-            binding.destination.setText(it)
+        destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                destinationPlacesFragment.clearList()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Saves destination location if any change is made to the field
+                newText?.let { viewModel.setDestination(it) }
+
+                if (!isSelectionInProgress) {
+                    if (!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner) { predictions ->
+                            destinationPlacesFragment.updateList(predictions)
+                        }
+                    } else {
+                        destinationPlacesFragment.clearList()
+                    }
+                }
+                return true
+            }
         })
+
+        // Observe ViewModel LiveData and update UI accordingly
         viewModel.selectedDate.observe(viewLifecycleOwner, Observer {
             binding.idTVSelectedDate.text = it
         })
