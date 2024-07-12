@@ -92,7 +92,6 @@ class create_trip : Fragment() {
             isSelectionInProgress = true
             pickupSearchView.setQuery(prediction, false)
             pickupPlacesFragment.clearList()
-            viewModel.setPickupLocation(prediction)
             isSelectionInProgress = false
         })
 
@@ -103,6 +102,9 @@ class create_trip : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                // Saves pickup location if any change is made to the field
+                newText?.let { viewModel.setPickupLocation(it) }
+
                 if (!isSelectionInProgress) {
                     if (!newText.isNullOrEmpty()) {
                         placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner) { predictions ->
