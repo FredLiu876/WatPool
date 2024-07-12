@@ -28,9 +28,9 @@ class CreateTripViewModel : ViewModel() {
         _pickupLocation.value = location
     }
 
-    fun setDestination(dest: String) {
-        _destination.value = dest
-    }
+//    fun setDestination(dest: String) {
+//        _destination.value = dest
+//    }
 
     fun setSelectedDate(date: String) {
         _selectedDate.value = date
