@@ -62,12 +62,12 @@ class create_trip : Fragment() {
             pickupPlacesFragment = PlacesFragment()
             destinationPlacesFragment = PlacesFragment()
             childFragmentManager.commit {
-                add(R.id.places_fragment_container, pickupPlacesFragment)
-                add(R.id.places_fragment_container2, destinationPlacesFragment)
+                add(R.id.pickup_places_fragment_container, pickupPlacesFragment)
+                add(R.id.destination_places_fragment_container, destinationPlacesFragment)
             }
         } else {
-            pickupPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container) as PlacesFragment
-            destinationPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container2) as PlacesFragment
+            pickupPlacesFragment = childFragmentManager.findFragmentById(R.id.pickup_places_fragment_container) as PlacesFragment
+            destinationPlacesFragment = childFragmentManager.findFragmentById(R.id.destination_places_fragment_container) as PlacesFragment
         }
 
         placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
@@ -205,6 +205,7 @@ class create_trip : Fragment() {
             viewModel.saveTrip()
             viewModel.onCreateTrip(findNavController())
         }
+        pickupSearchView.requestFocus()
     }
 
     override fun onDestroyView() {

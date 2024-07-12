@@ -21,7 +21,7 @@
             android:queryHint="Enter pickup location" />
 
         <FrameLayout
-            android:id="@+id/places_fragment_container"
+            android:id="@+id/pickup_places_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -36,7 +36,7 @@
             android:queryHint="Enter destination" />
 
         <FrameLayout
-            android:id="@+id/places_fragment_container2"
+            android:id="@+id/destination_places_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
