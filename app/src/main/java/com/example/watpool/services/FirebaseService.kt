@@ -98,8 +98,8 @@ class FirebaseService : Service() {
     fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference> {
         return tripsService.createTripPosting(userId, startingCoordinateId, endingCoordinateId, tripDate, isRecurring, recurringDayOfTheWeek, recurringEndDate)
     }
-    fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderIds: List<String>): Task<DocumentReference> {
-        return tripsService.createTripConfirmation(tripId, confirmationDate, riderIds)
+    fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: String): Task<DocumentReference> {
+        return tripsService.createTripConfirmation(tripId, confirmationDate, riderId)
     }
 
     private fun tripsCoordinateConnector(task: Task<QuerySnapshot>): Task<List<DocumentSnapshot>> {
