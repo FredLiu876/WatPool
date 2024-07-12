@@ -15,7 +15,7 @@ interface TripsService {
     fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
-    fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderIds: List<String>): Task<DocumentReference>
+    fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: List<String>): Task<DocumentReference>
 
     fun fetchTripsByDriverId(driverId: String): Task<QuerySnapshot>
 

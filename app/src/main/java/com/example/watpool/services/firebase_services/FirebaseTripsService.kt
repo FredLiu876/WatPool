@@ -73,13 +73,13 @@ class FirebaseTripsService: TripsService {
     }
 
 
-    override fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderIds: List<String>): Task<DocumentReference> {
+    override fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: List<String>): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val confirmation = hashMapOf(
             "id" to id,
             "tripId" to tripId,
             "confirmation_date" to confirmationDate.toString(),
-            "rider_ids" to riderIds
+            "rider_id" to riderId
         )
 
         return tripsConfirmationRef.add(confirmation)
@@ -98,7 +98,7 @@ class FirebaseTripsService: TripsService {
 
     // get trip confirmation by rider id
     override fun fetchTripConfirmationByRiderId(riderId: String): Task<QuerySnapshot> {
-        return tripsRef.whereArrayContains("rider_ids", riderId).get()
+        return tripsRef.whereEqualTo("rider_id", riderId).get()
     }
 
 

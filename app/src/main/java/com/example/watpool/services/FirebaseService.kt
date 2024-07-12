@@ -20,6 +20,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -71,8 +72,8 @@ class FirebaseService : Service() {
         return coordinateService.fetchCoordinatesByLocation(latitude, longitude, radiusInKm)
     }
 
-    fun addCoordinate(driverId: String, latitude: Double, longitude: Double): Task<DocumentReference> {
-        return coordinateService.addCoordinate(driverId, latitude, longitude)
+    fun addCoordinate(driverId: String, latitude: Double, longitude: Double, location: String = ""): Task<DocumentReference> {
+        return coordinateService.addCoordinate(driverId, latitude, longitude, location)
     }
 
     fun fetchUsersByUsername(username: String) : Task<QuerySnapshot> {
@@ -101,12 +102,49 @@ class FirebaseService : Service() {
         return tripsService.createTripConfirmation(tripId, confirmationDate, riderIds)
     }
 
-    fun fetchTripsByDriverId(driverId: String): Task<QuerySnapshot> {
-        return tripsService.fetchTripsByDriverId(driverId)
+    private fun tripsCoordinateConnector(task: Task<QuerySnapshot>): Task<List<DocumentSnapshot>> {
+        return task
+            .continueWithTask { task ->
+                if (task.isSuccessful) {
+                    val querySnapshot = task.result
+                    if (!querySnapshot.isEmpty) {
+                        val updateTasks = querySnapshot.documents.map { document ->
+                            val startCoordinateId = document.getString("starting_coordinate") ?: ""
+                            val endCoordinateId = document.getString("ending_coordinate") ?: ""
+
+                            Tasks.whenAllComplete(
+                                coordinateService.fetchCoordinatesById(startCoordinateId),
+                                coordinateService.fetchCoordinatesById(endCoordinateId)
+                            ).continueWith { coordTasks ->
+                                val startLocation = (coordTasks.result[0].result as? DocumentSnapshot)?.getString("location") ?: ""
+                                val endLocation = (coordTasks.result[1].result as? DocumentSnapshot)?.getString("location") ?: ""
+
+                                document.reference.update(
+                                    mapOf(
+                                        "starting_location" to startLocation,
+                                        "ending_location" to endLocation
+                                    )
+                                )
+                                document
+                            }
+                        }
+                        Tasks.whenAllComplete(updateTasks)
+                            .continueWith { it -> it.result.map { it.result as DocumentSnapshot } }
+                    } else {
+                        Tasks.forResult(emptyList<DocumentSnapshot>())
+                    }
+                } else {
+                    Tasks.forException(task.exception ?: Exception("Unknown error"))
+                }
+            }
     }
 
-    fun fetchTripsByRiderId(riderId: String): Task<QuerySnapshot> {
-        return tripsService.fetchTripsByRiderId(riderId)
+    fun fetchTripsByDriverId(driverId: String): Task<List<DocumentSnapshot>> {
+        return tripsCoordinateConnector(tripsService.fetchTripsByDriverId(driverId))
+    }
+
+    fun fetchTripsByRiderId(riderId: String): Task<List<DocumentSnapshot>> {
+        return tripsCoordinateConnector(tripsService.fetchTripsByRiderId(riderId))
     }
 
     fun fetchTripConfirmationByRiderId(riderId: String): Task<QuerySnapshot> {
