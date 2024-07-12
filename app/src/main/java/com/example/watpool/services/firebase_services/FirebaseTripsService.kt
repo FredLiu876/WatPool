@@ -73,7 +73,7 @@ class FirebaseTripsService: TripsService {
     }
 
 
-    override fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: List<String>): Task<DocumentReference> {
+    override fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: String): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val confirmation = hashMapOf(
             "id" to id,
