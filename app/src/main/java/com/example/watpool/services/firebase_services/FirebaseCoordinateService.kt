@@ -28,11 +28,15 @@ class FirebaseCoordinateService: CoordinateService {
     private val database = Firebase.firestore
     private val coordinatesRef: CollectionReference = database.collection("coordinates")
 
+    override fun fetchCoordinatesById(id: String): Task<QuerySnapshot> {
+        return coordinatesRef.whereEqualTo("id", id).get()
+    }
+
     override fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinatesRef.whereEqualTo("driver_id", driverId).get()
     }
 
-    override fun addCoordinate(driverId: String, latitude: Double, longitude: Double): Task<DocumentReference> {
+    override fun addCoordinate(driverId: String, latitude: Double, longitude: Double, location: String): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val hash = GeoFireUtils.getGeoHashForLocation(GeoLocation(latitude, longitude))
         val coordinate = hashMapOf(
@@ -40,7 +44,8 @@ class FirebaseCoordinateService: CoordinateService {
             "latitude" to latitude,
             "longitude" to longitude,
             "driver_id" to driverId,
-            "geohash" to hash
+            "geohash" to hash,
+            "location" to location
         )
 
         return coordinatesRef.add(coordinate)

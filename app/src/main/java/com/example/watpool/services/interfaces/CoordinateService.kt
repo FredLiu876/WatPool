@@ -8,7 +8,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 
 interface CoordinateService {
+    fun fetchCoordinatesById(id: String): Task<QuerySnapshot>
     fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot>
     fun fetchCoordinatesByLocation(latitude: Double, longitude: Double, radiusInKm: Double): Task<MutableList<DocumentSnapshot>>
-    fun addCoordinate(driverId: String, latitude: Double, longitude: Double): Task<DocumentReference>
+    fun addCoordinate(driverId: String, latitude: Double, longitude: Double, location: String): Task<DocumentReference>
 }
