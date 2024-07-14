@@ -1,5 +1,7 @@
 package com.example.watpool.ui.maps
 
+import PlacesFragment
+import PlacesViewModel
 import android.Manifest
 import android.content.ComponentName
 import android.content.Context
@@ -14,14 +16,18 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
@@ -57,8 +63,13 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // onDestroyView.
     private val binding get() = _binding!!
     // Search view for maps
-    private lateinit var searchView : SearchView;
+    private lateinit var searchView : SearchView
+
+    private lateinit var placesFragment: PlacesFragment
+
+    // View Models
     private val mapsViewModel: MapsViewModel by viewModels()
+    private lateinit var placesViewModel: PlacesViewModel
 
     // Create google map object to be used for modification within fragment
     // Dont show map until location is set
@@ -81,6 +92,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private var searchRadius : Double = 1.0
 
     private fun moveMapCamera(location: Location){
+        placesFragment.clearList()
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
@@ -110,6 +122,17 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         _binding = FragmentMapsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        if (savedInstanceState == null) {
+            placesFragment = PlacesFragment()
+            childFragmentManager.commit {
+                add(R.id.places_fragment_container, placesFragment)
+            }
+        } else {
+            placesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container) as PlacesFragment
+        }
+
+        placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
+
         // Bottom of map safety sheet bindings and listener
         val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
         buttonOpenBottomSheet.setOnClickListener {
@@ -121,6 +144,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
             findingRoute = false
+            placesFragment.clearList()
             drawRadius()
             userLocation?.let {
                 moveMapCamera(it)
@@ -131,6 +155,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
             findingRoute = false
+            placesFragment.clearList()
             drawRadius()
             val cameraPosition = map?.cameraPosition?.target
             cameraPosition?.let {
@@ -145,6 +170,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         searchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
             findingRoute = false
+            placesFragment.clearList()
             searchRadius = value.toDouble()
             drawRadius()
             sliderLabel.text = buildString {
@@ -156,18 +182,35 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         // Top search bar binding and listener
         searchView = binding.mapSearchView
+
         // allow for clicking anywhere on search view to search
         searchView.isIconified = false
+
+        // TODO: clear predictions after selected item
+        // Set search view to selected prediction
+        placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
+            searchView.setQuery(prediction, true)
+        })
+
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 findingRoute = false
+                placesFragment.clearList()
                 query?.let { locationSearch(it) }
                 return false
             }
-            // TODO: possibly implement recommendations based on search results
+
             override fun onQueryTextChange(newText: String?): Boolean {
                 findingRoute = false
-                return false
+                // Check if text is null otherwise get recommendations based on user search
+                if(!newText.isNullOrEmpty()) {
+                    placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
+                        placesFragment.updateList(predictions)
+                    })
+                } else {
+                    placesFragment.clearList()
+                }
+                return true
             }
         })
 

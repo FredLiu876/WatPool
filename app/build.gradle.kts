@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -10,6 +12,10 @@ android {
     namespace = "com.example.watpool"
     compileSdk = 34
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.watpool"
         minSdk = 24
@@ -17,6 +23,15 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // Read local.properties file to get the API key
+        val localProperties = Properties().apply {
+            load(rootProject.file("local.properties").inputStream())
+        }
+
+        val mapsApiKey: String = localProperties.getProperty("mapsApiKey") ?: ""
+
+
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -55,6 +70,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
     implementation("com.firebase:geofire-android-common:3.2.0")
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.places)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
