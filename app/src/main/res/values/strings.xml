@@ -18,7 +18,7 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="name">Name</string>
-    <string name="start">Start</string>
+    <string name="register">Register</string>
     <string name="maps">Maps</string>
     <string name="to_destination">To: %1$s</string>
     <string name="from_destination">From: %1$s</string>

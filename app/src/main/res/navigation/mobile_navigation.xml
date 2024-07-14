@@ -43,7 +43,7 @@
 
     <fragment
         android:id="@+id/navigation_login"
-        android:name="com.example.watpool.ui.welcome.LoginFragment"
+        android:name="com.example.watpool.ui.login.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
 
