@@ -11,7 +11,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentLoginBinding
-import com.example.watpool.ui.login.LoginViewModel
 import com.google.firebase.auth.FirebaseUser
 
 class LoginFragment : Fragment() {
@@ -22,7 +21,7 @@ class LoginFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
