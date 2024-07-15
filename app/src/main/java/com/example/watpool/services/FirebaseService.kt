@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.firebase_services.FirebaseAuthService
 import com.example.watpool.services.firebase_services.FirebaseCoordinateService
@@ -16,16 +17,21 @@ import com.example.watpool.services.interfaces.DriverService
 import com.example.watpool.services.interfaces.TripsService
 import com.example.watpool.services.interfaces.UserService
 import com.example.watpool.services.models.Coordinate
+import com.example.watpool.services.models.TripConfirmationDetails
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.Timestamp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.util.Locale
 
 
 // TODO: Add helper functions here to interact with the DB
@@ -187,6 +193,38 @@ class FirebaseService : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun makeTripNonRecurring(tripId: String): Task<Void> {
         return tripsService.makeTripNonRecurring(tripId)
+    }
+
+    suspend fun fetchAllConfirmedTripsByRiderId(riderId: String): List<TripConfirmationDetails> {
+        val tripConfirmations = tripsService.fetchTripConfirmationByRiderId(riderId).await()
+        val tripIds = tripConfirmations.documents.mapNotNull { it.getString("tripId") }
+        val tripDetails = tripsCoordinateConnector(tripsService.fetchTripsByTripIds(tripIds)).await()
+
+
+        val fetchedTrips = tripDetails.mapNotNull { document ->
+            val tripDateFormatted = document.getTimestamp("trip_date")?.toDate()
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            Log.d("TripDocument", "ID: ${document.getString("id")}, To: ${document.getString("to")}, From: ${document.getString("from")}, Trip Date: $tripDateFormatted, Driver ID: ${document.getString("driver_id")}")
+            val documentData = document.data
+            Log.d("TripDocument", documentData.toString())
+
+            tripDateFormatted?.let {
+                TripConfirmationDetails(
+                    id = document.getString("id") ?: "",
+                    to = document.getString("to") ?: "",
+                    from = document.getString("from") ?: "",
+                    tripDate = format.format(tripDateFormatted),
+                    driverId = document.getString("driver_id") ?: "",
+                    driver = ""
+                )
+            }
+        }
+        val fullTripDetails = fetchedTrips.map { trip ->
+            val driverName = userService.fetchUsersById(trip.driverId).await().documents.mapNotNull { it.getString("name") } [0]
+            trip.copy(driver = driverName ?: "Unknown")
+        }
+        return fullTripDetails
     }
 
 }

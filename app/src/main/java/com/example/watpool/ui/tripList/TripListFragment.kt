@@ -1,44 +1,45 @@
 package com.example.watpool.ui.tripList
 
-import com.example.watpool.R
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.watpool.services.TripListService
-import com.example.watpool.services.TripConfirmation
+import com.example.watpool.R
 import com.example.watpool.services.FirebaseService
-import kotlinx.coroutines.launch
+import com.example.watpool.services.models.TripConfirmationDetails
+import com.google.android.material.button.MaterialButton
 
 class TripListFragment : Fragment() {
 
     private lateinit var tripAdapter: TripAdapter
-    private lateinit var trips: List<TripConfirmation>
-    private lateinit var tripListService: TripListService
-    private lateinit var firebaseService: FirebaseService
+    private val tripListViewModel: TripListViewModel by viewModels()
+
+    private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_trip_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        tripListService = TripListService()
-        firebaseService = FirebaseService()
-        fetchConfirmedTripsForUser()
-
         // Initialize RecyclerView and Adapter
-        tripAdapter = TripAdapter(trips) { trip ->
+        tripAdapter = TripAdapter(emptyList()) { trip ->
             val action = TripListFragmentDirections.actionTripListFragmentToIsCurrentTripFragment(trip.id)
             findNavController().navigate(action)
         }
@@ -46,19 +47,57 @@ class TripListFragment : Fragment() {
         val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = tripAdapter
+
+        // Observe the LiveData from the ViewModel
+        tripListViewModel.trips.observe(viewLifecycleOwner, Observer { trips ->
+            tripAdapter.updateTrips(trips)
+        })
+
+        // Bind to FirebaseService
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
     }
 
-    private fun fetchConfirmedTripsForUser() {
-        // Launch a coroutine in the view's lifecycle scope
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val riderId = firebaseService.currentUser()
-                // Call the suspend function
-                trips = tripListService.fetchAllConfirmedTripsByRiderId(riderId)
-            } catch (e: Exception) {
-                // Handle any errors
-                e.printStackTrace()
+    override fun onStart() {
+        super.onStart()
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
+    }
+
+    // Stop location service if still bound
+    override fun onStop() {
+        super.onStop()
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (firebaseBound) {
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
+    }
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+            firebaseBound = true
+
+            // Fetch trips once the service is connected
+            firebaseService?.let {
+                //val riderId = it.currentUser()
+                val riderId = "user_id_1"
+                tripListViewModel.fetchConfirmedTrips(it, riderId)
             }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            firebaseBound = false
         }
     }
 }

@@ -23,6 +23,7 @@
 | June 20, 2024 | 3    | Created trip details and connected parts                                                       |
 | June 23, 2024 | 1    | Connected trip list to trip safety features                                                    |
 | July 14, 2024 | 5    | Connected database to trip list with a query joining trip confirmations, trips and user tables |
+| July 15, 2024 | 3    | Debugged issues with database queries                                                          |
 
 | Sriram        | Time | Task                           |
 |---------------|------|--------------------------------|

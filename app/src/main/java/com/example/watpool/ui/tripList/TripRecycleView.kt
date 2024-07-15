@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.watpool.services.TripConfirmation
+import com.example.watpool.services.models.TripConfirmationDetails
 
-class TripAdapter(private var trips: List<TripConfirmation>, private val clickListener: (TripConfirmation) -> Unit) :
+class TripAdapter(private var trips: List<TripConfirmationDetails>, private val clickListener: (TripConfirmationDetails) -> Unit) :
     RecyclerView.Adapter<TripAdapter.TripViewHolder>() {
 
     // ViewHolder class that binds the trip data to the UI components
@@ -18,12 +18,12 @@ class TripAdapter(private var trips: List<TripConfirmation>, private val clickLi
         private val tripDriver: TextView = itemView.findViewById(R.id.trip_driver)
         private val tripDate: TextView = itemView.findViewById(R.id.trip_date)
 
-        fun bind(trip: TripConfirmation, clickListener: (TripConfirmation) -> Unit) {
+        fun bind(trip: TripConfirmationDetails, clickListener: (TripConfirmationDetails) -> Unit) {
             val context = itemView.context
             tripTo.text = context.getString(R.string.to_destination, trip.to)
             tripFrom.text = context.getString(R.string.from_destination, trip.from)
             tripDriver.text = trip.driver
-            tripDate.text = trip.trip_date
+            tripDate.text = trip.tripDate
 
             itemView.setOnClickListener { clickListener(trip) }
         }
@@ -43,5 +43,11 @@ class TripAdapter(private var trips: List<TripConfirmation>, private val clickLi
     // Returns the total number of items in the data set
     override fun getItemCount(): Int {
         return trips.size
+    }
+
+    // Method to update the trip list
+    fun updateTrips(newTrips: List<TripConfirmationDetails>) {
+        trips = newTrips
+        notifyDataSetChanged()
     }
 }

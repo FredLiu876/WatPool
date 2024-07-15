@@ -104,7 +104,7 @@ class FirebaseTripsService: TripsService {
 
     // get trip confirmation by rider id
     override fun fetchTripConfirmationByRiderId(riderId: String): Task<QuerySnapshot> {
-        return tripsRef.whereEqualTo("rider_id", riderId).get()
+        return tripsConfirmationRef.whereEqualTo("rider_id", riderId).get()
     }
 
 
