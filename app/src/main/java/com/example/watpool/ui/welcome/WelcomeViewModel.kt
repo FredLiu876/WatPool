@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.example.watpool.R
 import com.example.watpool.services.firebase_services.FirebaseAuthService
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
 class WelcomeViewModel : ViewModel() {
