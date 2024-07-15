@@ -4,6 +4,7 @@ import com.example.watpool.services.interfaces.AuthService
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 
 class FirebaseAuthService : AuthService {
@@ -22,5 +23,9 @@ class FirebaseAuthService : AuthService {
             .setDisplayName(name)
             .build()
         return user!!.updateProfile(profileUpdates)
+    }
+
+    fun getCurrentUser(): FirebaseUser? {
+        return auth.currentUser
     }
 }
