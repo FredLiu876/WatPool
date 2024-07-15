@@ -6,10 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.watpool.services.TripConfirmation
 
-data class Trip(val id: String, val to: String, val from: String, val date: String, val driver: String)
-
-class TripAdapter(private var trips: List<Trip>, private val clickListener: (Trip) -> Unit) :
+class TripAdapter(private var trips: List<TripConfirmation>, private val clickListener: (TripConfirmation) -> Unit) :
     RecyclerView.Adapter<TripAdapter.TripViewHolder>() {
 
     // ViewHolder class that binds the trip data to the UI components
@@ -19,12 +18,12 @@ class TripAdapter(private var trips: List<Trip>, private val clickListener: (Tri
         private val tripDriver: TextView = itemView.findViewById(R.id.trip_driver)
         private val tripDate: TextView = itemView.findViewById(R.id.trip_date)
 
-        fun bind(trip: Trip, clickListener: (Trip) -> Unit) {
+        fun bind(trip: TripConfirmation, clickListener: (TripConfirmation) -> Unit) {
             val context = itemView.context
             tripTo.text = context.getString(R.string.to_destination, trip.to)
             tripFrom.text = context.getString(R.string.from_destination, trip.from)
             tripDriver.text = trip.driver
-            tripDate.text = trip.date
+            tripDate.text = trip.trip_date
 
             itemView.setOnClickListener { clickListener(trip) }
         }

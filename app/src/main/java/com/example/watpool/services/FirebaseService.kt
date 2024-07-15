@@ -64,6 +64,10 @@ class FirebaseService : Service() {
         return authService.signUp(email, password)
     }
 
+    fun currentUser(): String {
+        return authService.currentUser()
+    }
+
     fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }
@@ -140,6 +144,10 @@ class FirebaseService : Service() {
                     Tasks.forException(task.exception ?: Exception("Unknown error"))
                 }
             }
+    }
+
+    fun fetchTripsByTripsId(tripIds: List<String>): Task<List<DocumentSnapshot>> {
+        return tripsCoordinateConnector(tripsService.fetchTripsByTripIds(tripIds))
     }
 
     fun fetchTripsByDriverId(driverId: String): Task<List<DocumentSnapshot>> {

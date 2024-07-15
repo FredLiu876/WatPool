@@ -87,6 +87,12 @@ class FirebaseTripsService: TripsService {
 
 
     // get trips by driver id
+    override fun fetchTripsByTripIds(tripIds: List<String>): Task<QuerySnapshot> {
+        return tripsRef.whereIn("id", tripIds).get()
+    }
+
+
+    // get trips by driver id
     override fun fetchTripsByDriverId(driverId: String): Task<QuerySnapshot> {
         return tripsRef.whereEqualTo("driver_id", driverId).get()
     }
