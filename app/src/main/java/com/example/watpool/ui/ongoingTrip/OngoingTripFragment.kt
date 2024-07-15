@@ -36,6 +36,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.button.MaterialButton
 import org.json.JSONObject
+import kotlin.math.max
 
 
 class OngoingTripFragment : Fragment(), OnMapReadyCallback {
@@ -53,10 +54,12 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
     // off-route constants
     private val checkInterval: Long = 5000 // 5 seconds
     private val offRouteThreshold: Double = 50.0 // 50 meters
-    // off-route runner
+    private val offRouteCountLimit: Int = 3
+    // off-route variables
     private val offRouteHandler = Handler(Looper.getMainLooper())
     private var checkOffRouteRunner: Runnable? = null
     private var isPopupDisplayed = false
+    private var offRouteCount = 0
 
     // Create google map object to be used for modification within fragment
     // Don't show map until location is set
@@ -312,11 +315,22 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         checkOffRouteRunner = Runnable {
             userLocation?.let { currentLocation ->
                 if (isOffRoute(currentLocation)) {
-                    Log.d("OffRouteCheck", "User is off route!")
-                    // show offroute pop up
-                    showOffRoutePopup()
+                    Log.d("OffRouteCheck", "User is off route! Offense $offRouteCount")
+                    if (offRouteCount < offRouteCountLimit) {
+                        userLocation?.let {
+                            val originLatLng = LatLng(userLocation!!.latitude, userLocation!!.longitude)
+                            calculateRoute(originLatLng, tripDestination)
+                        }
+                        offRouteCount++
+                    } else {
+                        // show offroute pop up
+                        showOffRoutePopup()
+                        offRouteCount = 0
+                    }
                 } else {
                     Log.d("OffRouteCheck", "User is on route!")
+                    // reduce offroute offense if user stay on track
+                    offRouteCount = max(offRouteCount-1, 0)
                 }
             }
             offRouteHandler.postDelayed(checkOffRouteRunner!!, checkInterval)
@@ -395,10 +409,6 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         map?.clear()
         map?.addMarker(MarkerOptions().position(origin))
         map?.addMarker(MarkerOptions().position(destination))
-        map?.let { googleMap ->
-            val latLng = LatLng(destination.latitude, destination.longitude)
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-        }
     }
 
 
