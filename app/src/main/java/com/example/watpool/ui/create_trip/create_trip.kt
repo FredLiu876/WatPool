@@ -1,5 +1,7 @@
 package com.example.watpool.ui.create_trip
 
+import PlacesFragment
+import PlacesViewModel
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.fragment.app.viewModels
@@ -15,6 +17,10 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.databinding.FragmentCreateTripBinding
 import java.util.Calendar
+import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModelProvider
+import com.example.watpool.R
 
 class create_trip : Fragment() {
 
@@ -24,7 +30,9 @@ class create_trip : Fragment() {
 
     private var _binding: FragmentCreateTripBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel: CreateTripViewModel by viewModels()
+    private lateinit var placesViewModel: PlacesViewModel
 
     private lateinit var pickDateBtn: Button
     private lateinit var selectedDateTV: TextView
@@ -32,9 +40,16 @@ class create_trip : Fragment() {
     private lateinit var selectedTimeTV: TextView
     private lateinit var createTripBtn: Button
 
+    private lateinit var pickupSearchView: SearchView
+    private lateinit var pickupPlacesFragment: PlacesFragment
+    private lateinit var destinationSearchView: SearchView
+    private lateinit var destinationPlacesFragment: PlacesFragment
+    private var isSelectionInProgress = false
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // TODO: Use the ViewModel
     }
 
     override fun onCreateView(
@@ -42,6 +57,21 @@ class create_trip : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCreateTripBinding.inflate(inflater, container, false)
+
+        if (savedInstanceState == null) {
+            pickupPlacesFragment = PlacesFragment()
+            destinationPlacesFragment = PlacesFragment()
+            childFragmentManager.commit {
+                add(R.id.pickup_places_fragment_container, pickupPlacesFragment)
+                add(R.id.destination_places_fragment_container, destinationPlacesFragment)
+            }
+        } else {
+            pickupPlacesFragment = childFragmentManager.findFragmentById(R.id.pickup_places_fragment_container) as PlacesFragment
+            destinationPlacesFragment = childFragmentManager.findFragmentById(R.id.destination_places_fragment_container) as PlacesFragment
+        }
+
+        placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
+
         return binding.root
     }
 
@@ -57,13 +87,77 @@ class create_trip : Fragment() {
         selectedTimeTV = binding.idTVSelectedTime
         createTripBtn = binding.createTripBtn
 
+        pickupSearchView = binding.pickupLocation
+        pickupSearchView.setQueryHint("Enter pickup location");
+        pickupSearchView.isIconified = false
+
+        destinationSearchView = binding.destination
+        destinationSearchView.setQueryHint("Enter destination");
+        destinationSearchView.isIconified = false
+
+
+        placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
+            if (pickupSearchView.hasFocus()) {
+                isSelectionInProgress = true
+                pickupSearchView.setQuery(prediction, false)
+                pickupPlacesFragment.clearList()
+                isSelectionInProgress = false
+            }
+            if (destinationSearchView.hasFocus()) {
+                isSelectionInProgress = true
+                destinationSearchView.setQuery(prediction, false)
+                destinationPlacesFragment.clearList()
+                isSelectionInProgress = false
+            }
+        })
+
+        pickupSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                pickupPlacesFragment.clearList()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Saves pickup location if any change is made to the field
+                newText?.let { viewModel.setPickupLocation(it) }
+
+                if (!isSelectionInProgress) {
+                    if (!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner) { predictions ->
+                            pickupPlacesFragment.updateList(predictions)
+                        }
+                    } else {
+                        pickupPlacesFragment.clearList()
+                    }
+                }
+                return true
+            }
+        })
+
+        destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                destinationPlacesFragment.clearList()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Saves destination location if any change is made to the field
+                newText?.let { viewModel.setDestination(it) }
+
+                if (!isSelectionInProgress) {
+                    if (!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner) { predictions ->
+                            destinationPlacesFragment.updateList(predictions)
+                        }
+                    } else {
+                        destinationPlacesFragment.clearList()
+                    }
+                }
+                return true
+            }
+        })
+
         // Observe ViewModel LiveData and update UI accordingly
-        viewModel.pickupLocation.observe(viewLifecycleOwner, Observer {
-            binding.pickupLocation.setText(it)
-        })
-        viewModel.destination.observe(viewLifecycleOwner, Observer {
-            binding.destination.setText(it)
-        })
         viewModel.selectedDate.observe(viewLifecycleOwner, Observer {
             binding.idTVSelectedDate.text = it
         })
@@ -107,16 +201,11 @@ class create_trip : Fragment() {
         }
 
         createTripBtn.setOnClickListener {
-            // Store the EditText values in the ViewModel
-            viewModel.setPickupLocation(binding.pickupLocation.text.toString())
-            viewModel.setDestination(binding.destination.text.toString())
             viewModel.setNumAvailableSeats(binding.numAvailableSeats.text.toString())
-
-            // Perform the actions to create the trip
-
             viewModel.saveTrip()
             viewModel.onCreateTrip(findNavController())
         }
+        pickupSearchView.requestFocus()
     }
 
     override fun onDestroyView() {
