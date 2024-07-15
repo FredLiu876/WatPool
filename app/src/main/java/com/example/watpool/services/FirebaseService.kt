@@ -16,6 +16,8 @@ import com.example.watpool.services.interfaces.DriverService
 import com.example.watpool.services.interfaces.TripsService
 import com.example.watpool.services.interfaces.UserService
 import com.example.watpool.services.models.Coordinate
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
@@ -89,23 +91,59 @@ class FirebaseService : Service() {
         return userService.createDriver(username, licenseNumber, carModel, carColor)
     }
 
-//    fun cloneTrip(tripId: String) {
-//        tripsService.cloneTrip(tripId)
-//    }
-
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference> {
-        return tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
+    fun createTrip(driverId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<Task<DocumentReference>> {
+        return Tasks.whenAllComplete(
+            coordinateService.addCoordinate(driverId, startLatitude, startLongitude, startLocation),
+            coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
+        ).continueWith { tasks ->
+            if (tasks.isSuccessful) {
+                val startingCoordinateId = (tasks.result[0].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val endingCoordinateId = (tasks.result[1].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
+                val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
+                tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
+            } else {
+                Tasks.forException(tasks.exception ?: Exception("Unknown error"))
+            }
+        }
     }
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference> {
-        return tripsService.createTripPosting(userId, startingCoordinateId, endingCoordinateId, tripDate, isRecurring, recurringDayOfTheWeek, recurringEndDate)
+    fun createTripPosting(userId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<Task<DocumentReference>> {
+        return Tasks.whenAllComplete(
+            coordinateService.addCoordinate(userId, startLatitude, startLongitude, startLocation),
+            coordinateService.addCoordinate(userId, endLatitude, endLongitude, endLocation)
+        ).continueWith { tasks ->
+            if (tasks.isSuccessful) {
+                val startingCoordinateId =
+                    (tasks.result[0].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val endingCoordinateId =
+                    (tasks.result[1].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val startGeohash =
+                    GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
+                val endGeohash =
+                    GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
+                tripsService.createTripPosting(
+                    userId,
+                    startingCoordinateId,
+                    endingCoordinateId,
+                    startGeohash,
+                    endGeohash,
+                    tripDate,
+                    isRecurring,
+                    recurringDayOfTheWeek,
+                    recurringEndDate
+                )
+            } else {
+                Tasks.forException(tasks.exception ?: Exception("Unknown error"))
+            }
+        }
     }
     fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: String): Task<DocumentReference> {
         return tripsService.createTripConfirmation(tripId, confirmationDate, riderId)
     }
 
-    private fun tripsCoordinateConnector(task: Task<QuerySnapshot>): Task<List<DocumentSnapshot>> {
+    fun tripsCoordinateConnector(task: Task<QuerySnapshot>): Task<List<DocumentSnapshot>> {
         return task
             .continueWithTask { task ->
                 if (task.isSuccessful) {
@@ -179,6 +217,12 @@ class FirebaseService : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun makeTripNonRecurring(tripId: String): Task<Void> {
         return tripsService.makeTripNonRecurring(tripId)
+    }
+
+    // Specify a location and a range to get trips starting / ending within that range
+    // fetches by start filter by default, set to false to fetch by end coordinates
+    fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, fetchByStart: Boolean = true): Task<MutableList<DocumentSnapshot>> {
+        return tripsService.fetchTripsByLocation(latitude, longitude, radiusInKm, fetchByStart)
     }
 
 }
