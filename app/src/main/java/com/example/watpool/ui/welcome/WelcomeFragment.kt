@@ -28,8 +28,12 @@ class WelcomeFragment : Fragment() {
 
         (activity as AppCompatActivity).supportActionBar?.hide()
 
-        binding.buttonGetStarted.setOnClickListener {
+        binding.buttonLogin.setOnClickListener {
             viewModel.onGetStartedClicked(findNavController())
+        }
+
+        binding.buttonRegister.setOnClickListener {
+            viewModel.onRegisterClicked(findNavController())
         }
     }
 

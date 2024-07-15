@@ -48,6 +48,12 @@
         tools:layout="@layout/fragment_login" />
 
     <fragment
+        android:id="@+id/navigation_signup"
+        android:name="com.example.watpool.ui.signup.SignUpFragment"
+        android:label="SignUp"
+        tools:layout="@layout/fragment_signup" />
+
+    <fragment
         android:id="@+id/tripDetailFragment"
         android:name="com.example.watpool.ui.tripList.TripDetailFragment"
         android:label="fragment_trip_detail"

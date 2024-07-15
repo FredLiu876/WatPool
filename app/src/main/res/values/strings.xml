@@ -25,4 +25,6 @@
     <string name="center_location">Recenter Location</string>
     <string name="default_radius">0.5 km</string>
     <string name="find_route">Find Route</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="login">Login</string>
 </resources>

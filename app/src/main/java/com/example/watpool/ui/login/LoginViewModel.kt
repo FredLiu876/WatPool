@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import com.example.watpool.services.firebase_services.FirebaseAuthService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.userProfileChangeRequest
 
 class LoginViewModel : ViewModel() {
     private val authService = FirebaseAuthService()
@@ -17,31 +16,18 @@ class LoginViewModel : ViewModel() {
     private val _errorLiveData = MutableLiveData<String?>()
     val errorLiveData: LiveData<String?> = _errorLiveData
 
-    init {
-        if (FirebaseAuth.getInstance().currentUser != null) {
-            _userLiveData.value = FirebaseAuth.getInstance().currentUser
-        }
-    }
-
-    fun registerUser(email: String, password: String, name: String) {
-        authService.signUp(email, password).addOnCompleteListener { task ->
+    fun loginUser(email: String, password: String) {
+        authService.signIn(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val user = FirebaseAuth.getInstance().currentUser
-                user?.let {
-                    val profileUpdates = userProfileChangeRequest {
-                        displayName = name
-                    }
-                    it.updateProfile(profileUpdates).addOnCompleteListener { profileUpdateTask ->
-                        if (profileUpdateTask.isSuccessful) {
-                            _userLiveData.value = user
-                        } else {
-                            _errorLiveData.value = profileUpdateTask.exception?.message
-                        }
-                    }
-                }
+                _userLiveData.value = FirebaseAuth.getInstance().currentUser
             } else {
                 _errorLiveData.value = task.exception?.message
             }
         }
+    }
+
+    fun logoutUser() {
+        FirebaseAuth.getInstance().signOut()
+        _userLiveData.value = null
     }
 }
