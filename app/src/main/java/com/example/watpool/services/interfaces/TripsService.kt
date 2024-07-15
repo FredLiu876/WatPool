@@ -4,6 +4,7 @@ import androidx.annotation.RequiresApi
 import com.example.watpool.services.firebase_services.FirebaseTripsService
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import java.time.LocalDate
 import java.util.UUID
@@ -12,9 +13,9 @@ interface TripsService {
     // fun cloneTrip(tripId: String): Task<DocumentReference>
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
+    fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
+    fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
     fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: String): Task<DocumentReference>
 
     fun fetchTripsByDriverId(driverId: String): Task<QuerySnapshot>
@@ -37,5 +38,7 @@ interface TripsService {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun makeTripNonRecurring(tripId: String): Task<Void>
+
+    fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, startFilter: Boolean): Task<MutableList<DocumentSnapshot>>
 
 }
