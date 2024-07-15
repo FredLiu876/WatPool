@@ -1,13 +1,15 @@
 # Time Log
 
-| Domenico      | Time | Task                                   |
-|---------------|------|----------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback         |
-| June 12, 2024 | 1    | Added Google Maps Integration          |
-| June 20, 2024 | 4    | Added Location Service and updated map |
-| June 20, 2024 | 3    | Added Search Address                   |
-| June 20, 2024 | 3    | Added Radius Search and updated map    |
-| June 20, 2024 | 0.5  | Integrated radius search with db       |
+| Domenico      | Time | Task                                                      |
+|---------------|------|-----------------------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                            |
+| June 12, 2024 | 1    | Added Google Maps Integration                             |
+| June 20, 2024 | 4    | Added Location Service and updated map                    |
+| June 20, 2024 | 3    | Added Search Address                                      |
+| June 20, 2024 | 3    | Added Radius Search and updated map                       |
+| June 20, 2024 | 0.5  | Integrated radius search with db                          |
+| July 8, 2024  | 2    | Added places api integration and destination autofill     |
+| July 15, 2024 | 0.5  | Removed demo maps functionality and fixed prediction bugs |
 
 | James         | Time | Task                                    |
 |---------------|------|-----------------------------------------|

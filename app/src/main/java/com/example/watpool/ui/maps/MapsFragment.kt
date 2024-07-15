@@ -12,12 +12,9 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,21 +38,13 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import java.io.IOException
 import java.util.Locale
-import org.json.JSONObject
 
 
 class MapsFragment : Fragment(), OnMapReadyCallback {
-
-    // TODO: Create better map initialization to display user current location
-    // TODO: Create button to recenter map on user location
-    // TODO: Ability to create markers for user and other functionality
-
-    // TODO: Cleanup map initilization and location usage
 
     private var _binding: FragmentMapsBinding? = null
 
@@ -75,7 +64,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
-    private var findingRoute = false
 
     // Stored locations
     private var userLocation: Location? = null
@@ -90,6 +78,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     // Search radius for getting postings
     private var searchRadius : Double = 1.0
+
+    // Last search
+    private var lastSearch : String = ""
 
     private fun moveMapCamera(location: Location){
         placesFragment.clearList()
@@ -113,7 +104,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -131,19 +121,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             placesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container) as PlacesFragment
         }
 
-        placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
-
-        // Bottom of map safety sheet bindings and listener
-        val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
-        buttonOpenBottomSheet.setOnClickListener {
-            val bottomSheet = SafetyBottomSheetDialog()
-            bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
-        }
+        placesViewModel = ViewModelProvider(requireActivity())[PlacesViewModel::class.java]
 
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
-            findingRoute = false
             placesFragment.clearList()
             drawRadius()
             userLocation?.let {
@@ -154,7 +136,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
-            findingRoute = false
             placesFragment.clearList()
             drawRadius()
             val cameraPosition = map?.cameraPosition?.target
@@ -169,7 +150,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val radiusSlider: Slider = binding.sliderRadius
         searchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
-            findingRoute = false
             placesFragment.clearList()
             searchRadius = value.toDouble()
             drawRadius()
@@ -178,7 +158,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 append(" km")
             }
         }
-
 
         // Top search bar binding and listener
         searchView = binding.mapSearchView
@@ -189,21 +168,23 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         // TODO: clear predictions after selected item
         // Set search view to selected prediction
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
+            lastSearch = prediction
             searchView.setQuery(prediction, true)
+            searchView.clearFocus()
+            placesFragment.clearList()
         })
 
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                findingRoute = false
+                searchView.clearFocus()
                 placesFragment.clearList()
                 query?.let { locationSearch(it) }
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                findingRoute = false
                 // Check if text is null otherwise get recommendations based on user search
-                if(!newText.isNullOrEmpty()) {
+                if(!newText.isNullOrEmpty() && newText != lastSearch) {
                     placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
                         placesFragment.updateList(predictions)
                     })
@@ -211,35 +192,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                     placesFragment.clearList()
                 }
                 return true
-            }
-        })
-
-
-        val buttonFindRoute: MaterialButton = binding.findRoute
-        buttonFindRoute.setOnClickListener {
-            findingRoute = true
-            // Fetch and draw the route once the map is ready
-            val origin =  map?.cameraPosition?.target// Example origin
-            val destination = LatLng(43.4698361, -80.5164223) // Example destination
-            origin?.let {
-                val originLatLng = LatLng(origin.latitude, origin.longitude)
-                mapsViewModel.fetchDirections(
-                    (LatLng(origin.latitude, origin.longitude)),
-                    destination
-                )
-                map?.clear()
-                map?.addMarker(MarkerOptions().position(originLatLng))
-            }
-            map?.addMarker(MarkerOptions().position(destination))
-            map?.let { googleMap ->
-                val latLng = LatLng(destination.latitude, destination.longitude)
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-            }
-        }
-
-        mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
-            directions?.let {
-                drawRoute(it)
             }
         })
 
@@ -280,9 +232,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
             googleMap.setOnCameraIdleListener {
-                if(!findingRoute){
-                    drawRadius()
-                }
+                drawRadius()
             }
         }
     }
@@ -412,39 +362,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-    private fun drawRoute(directions: String) {
-        try {
-            val jsonObject = JSONObject(directions)
-            val routes = jsonObject.getJSONArray("routes")
-            val points = ArrayList<LatLng>()
-            val polylineOptions = PolylineOptions()
-
-            for (i in 0 until routes.length()) {
-                val route = routes.getJSONObject(i)
-                val legs = route.getJSONArray("legs")
-
-                for (j in 0 until legs.length()) {
-                    val leg = legs.getJSONObject(j)
-                    val steps = leg.getJSONArray("steps")
-
-                    for (k in 0 until steps.length()) {
-                        val step = steps.getJSONObject(k)
-                        val point = step.getJSONObject("start_location")
-                        val lat: Double = point.getDouble("lat")
-                        val lng: Double = point.getDouble("lng")
-                        val position = LatLng(lat, lng)
-                        points.add(position)
-                    }
-                }
-            }
-            polylineOptions.addAll(points)
-            polylineOptions.width(12f)
-            polylineOptions.geodesic(true)
-            map?.addPolyline(polylineOptions)
-        } catch (e: Exception) {
-            Log.e("Draw route Exception", e.toString())
         }
     }
 }

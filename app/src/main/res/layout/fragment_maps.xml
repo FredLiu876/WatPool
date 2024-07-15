@@ -39,41 +39,16 @@
         app:layout_constraintEnd_toEndOf="@+id/mapSearchView"
         />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/find_route"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="72dp"
-        android:layout_marginHorizontal="16dp"
-        android:text="@string/find_route"
-        app:layout_constraintRight_toLeftOf="@id/btn_info"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="72dp"
-        android:layout_marginHorizontal="16dp"
-        app:icon="@drawable/ic_info"
-        style="@style/Widget.Material3.Button.IconButton.Filled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:iconSize="24dp"
-        android:contentDescription="@string/title_safety"
-        />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_recenter"
         style="@style/Widget.Material3.Button.IconButton.Filled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="72dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="144dp"
-        android:contentDescription="@string/center_location"
+        android:contentDescription= "@string/center_location"
         app:icon="@drawable/ic_center_location"
         app:iconSize="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -84,9 +59,9 @@
         style="@style/Widget.Material3.Button.IconButton.Filled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="216dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="144dp"
         android:contentDescription="@string/center_location"
         app:icon="@drawable/ic_search"
         app:iconSize="24dp"
