@@ -18,6 +18,8 @@ interface TripsService {
     fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
     fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: String): Task<DocumentReference>
 
+    fun fetchTripsByTripIds(tripIds: List<String>): Task<QuerySnapshot>
+
     fun fetchTripsByDriverId(driverId: String): Task<QuerySnapshot>
 
     fun fetchTripsByRiderId(riderId: String): Task<QuerySnapshot>
