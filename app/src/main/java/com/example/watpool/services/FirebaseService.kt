@@ -129,8 +129,8 @@ class FirebaseService : Service() {
                                 coordinateService.fetchCoordinatesById(startCoordinateId),
                                 coordinateService.fetchCoordinatesById(endCoordinateId)
                             ).continueWith { coordTasks ->
-                                val startLocation = (coordTasks.result[0].result as? DocumentSnapshot)?.getString("location") ?: ""
-                                val endLocation = (coordTasks.result[1].result as? DocumentSnapshot)?.getString("location") ?: ""
+                                val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
+                                val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
 
                                 document.reference.update(
                                     mapOf(
