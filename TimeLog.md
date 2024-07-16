@@ -15,6 +15,8 @@
 | June 10, 2024 | 2    | Added current trip status bar layout    |
 | June 20, 2024 | 3    | Added safety features bottom sheet      |
 | June 22, 2024 | 5    | Added direction finding from two points |
+| July 13, 2024 | 2    | Improve route drawing accuracy          |
+| July 15, 2024 | 3    | Add off-route detection                 |
 
 | Fred          | Time | Task                                                                                           |
 |---------------|------|------------------------------------------------------------------------------------------------|
@@ -36,6 +38,9 @@
 | July 09, 2024 | 0.5  | Meeting for D4                 |
 | July 09, 2024 | 1.0  | User DB Service                |
 | July 10, 2024 | 1.0  | Trips DB Service               |
+| July 14, 2024 | 0.5  | Meeting for D5                 |
+| July 15, 2024 | 1.0  | Trips DB Service - P2          |
+
 
 | Arham         | Time | Task                           |
 |---------------|------|--------------------------------|

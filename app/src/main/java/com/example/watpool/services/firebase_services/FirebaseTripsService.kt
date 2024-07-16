@@ -4,10 +4,14 @@ package com.example.watpool.services.firebase_services
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.interfaces.TripsService
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
 import java.time.LocalDate
@@ -23,15 +27,9 @@ class FirebaseTripsService: TripsService {
         WEDNESDAY ("WEDNESDAY"), THURSDAY ("THURSDAY"), FRIDAY ("FRIDAY"), SATURDAY ("SATURDAY")
     }
 
-    // fetches the last trip and creates a clone
-//    override fun cloneTrip(tripId: String): Task<DocumentReference> {
-//        val oldTrip = tripsRef.whereEqualTo("id", tripId).get()
-//        return oldTrip
-//    }
-
     // driver posting a new trip
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate): Task<DocumentReference> {
+    override fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val trip = hashMapOf(
             "id" to id,
@@ -40,7 +38,9 @@ class FirebaseTripsService: TripsService {
             "max_passengers" to maxPassengers,
             "is_recurring" to isRecurring,
             "trip_date" to tripDate.toString(),
-            "driver_id" to driverId
+            "driver_id" to driverId,
+            "start_geohash" to startGeohash,
+            "end_geohash" to endGeohash
         )
 
         if (isRecurring) {
@@ -53,7 +53,7 @@ class FirebaseTripsService: TripsService {
 
     // rider requesting new ride
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, tripDate: LocalDate, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate): Task<DocumentReference> {
+    override fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val trip = hashMapOf(
             "id" to id,
@@ -61,7 +61,9 @@ class FirebaseTripsService: TripsService {
             "ending_coordinate" to endingCoordinateId,
             "is_recurring" to isRecurring,
             "trip_date" to tripDate.toString(),
-            "passengers" to listOf<String>(userId)
+            "passengers" to listOf<String>(userId),
+            "start_geohash" to startGeohash,
+            "end_geohash" to endGeohash
         )
 
         if (isRecurring) {
@@ -84,7 +86,6 @@ class FirebaseTripsService: TripsService {
 
         return tripsConfirmationRef.add(confirmation)
     }
-
 
     // get trips by driver id
     override fun fetchTripsByTripIds(tripIds: List<String>): Task<QuerySnapshot> {
@@ -195,6 +196,47 @@ class FirebaseTripsService: TripsService {
         )
 
         return tripUpdate(tripId, tripUpdate)
+    }
+
+    override fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, startFilter: Boolean): Task<MutableList<DocumentSnapshot>> {
+        // Find the bounding box for quick filtering
+        val center = GeoLocation(latitude, longitude)
+        val radiusInM = radiusInKm * 1000
+
+        val bounds = GeoFireUtils.getGeoHashQueryBounds(center, radiusInM)
+        val tasks: MutableList<Task<QuerySnapshot>> = ArrayList()
+
+        var filterName: String = "start_geohash"
+        if (!startFilter) {
+            filterName = "end_geohash"
+        }
+        for (b in bounds) {
+            val q = tripsRef
+                .orderBy(filterName)
+                .startAt(b.startHash)
+                .endAt(b.endHash)
+            tasks.add(q.get())
+        }
+
+        return Tasks.whenAllComplete(tasks)
+            .continueWith {
+                val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
+                for (task in tasks) {
+                    val snap = task.result
+                    for (doc in snap!!.documents) {
+                        val lat = doc.getDouble("latitude")!!
+                        val lng = doc.getDouble("longitude")!!
+                        val docLocation = GeoLocation(lat, lng)
+                        val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
+                        if (distanceInM <= radiusInM) {
+                            matchingDocs.add(doc)
+                        }
+                    }
+                }
+
+                matchingDocs
+            }
+
     }
 
     // ------------------ DELETE (TODO) ------------------

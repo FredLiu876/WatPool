@@ -5,27 +5,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.ongoingTrip.OngoingTripFragment">
-    <TextView
-        android:id="@+id/trip_id_text_view"
-        android:layout_width="80dp"
-        android:layout_height="42dp"
-        android:layout_margin="16dp"
-        android:layout_marginStart="120dp"
-        android:text="Trip ID: "
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="60dp"
-        tools:ignore="MissingConstraints" />
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
+
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_info"
+        android:id="@+id/btn_safety"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="72dp"
         android:layout_marginHorizontal="16dp"
-        app:icon="@drawable/ic_info"
+        app:icon="@drawable/ic_shield"
         style="@style/Widget.Material3.Button.IconButton.Filled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:iconSize="24dp"
         />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/find_route"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="72dp"
+        android:layout_marginHorizontal="16dp"
+        android:text="@string/find_route"
+        app:layout_constraintRight_toLeftOf="@id/btn_safety"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
