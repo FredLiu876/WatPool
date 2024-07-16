@@ -30,7 +30,6 @@ import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
-import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -65,22 +64,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private var map : GoogleMap? = null
     private var isMapReady = false
 
-    // Stored locations
-    private var userLocation: Location? = null
-
-    // Create location service and bool value for to know when to bind it and clean up
+    // Services for location and database access
     private var locationService: LocationService? = null
-    private var locationBound: Boolean = false
-
-    // Coordinate service for fetching locations
     private var firebaseService: FirebaseService? = null
+
+    // Booleans to know if services are bound for cleanup
+    private var locationBound: Boolean = false
     private var firebaseBound: Boolean = false
 
     // Search radius for getting postings
     private var searchRadius : Double = 1.0
-
     // Last search
     private var lastSearch : String = ""
+    // Stored locations
+    private var userLocation: Location? = null
 
     private fun moveMapCamera(location: Location){
         placesFragment.clearList()
