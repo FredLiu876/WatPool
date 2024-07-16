@@ -14,4 +14,13 @@ class FirebaseAuthService : AuthService {
     override fun signUp(email: String, password: String): Task<AuthResult> {
         return auth.createUserWithEmailAndPassword(email, password)
     }
+
+    override fun currentUser(): String {
+        val user =  auth.currentUser
+        return if (user != null)  {
+            user.uid
+        } else {
+            "Not signed in"
+        }
+    }
 }

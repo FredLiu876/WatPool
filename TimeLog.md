@@ -18,12 +18,14 @@
 | July 13, 2024 | 2    | Improve route drawing accuracy          |
 | July 15, 2024 | 3    | Add off-route detection                 |
 
-| Fred          | Time | Task                                        |
-|---------------|------|---------------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback              |
-| June 18, 2024 | 1    | Created initial trip list view              |
-| June 20, 2024 | 3    | Created trip details and connected parts    |
-| June 23, 2024 | 1    | Connected trip list to trip safety features |
+| Fred          | Time | Task                                                                                           |
+|---------------|------|------------------------------------------------------------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                                                 |
+| June 18, 2024 | 1    | Created initial trip list view                                                                 |
+| June 20, 2024 | 3    | Created trip details and connected parts                                                       |
+| June 23, 2024 | 1    | Connected trip list to trip safety features                                                    |
+| July 14, 2024 | 5    | Connected database to trip list with a query joining trip confirmations, trips and user tables |
+| July 15, 2024 | 3    | Debugged issues with database queries                                                          |
 
 | Sriram        | Time | Task                           |
 |---------------|------|--------------------------------|
