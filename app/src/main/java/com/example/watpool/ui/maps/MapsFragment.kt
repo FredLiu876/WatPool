@@ -91,6 +91,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
+        searchView.clearFocus()
         tripListFragment.show(childFragmentManager, "TripListBottomSheet")
         val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
         postings?.addOnSuccessListener { documentSnapshot ->
@@ -166,7 +167,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         // Top search bar binding and listener
         searchView = binding.mapSearchView
-
+        searchView.clearFocus()
         // allow for clicking anywhere on search view to search
         searchView.isIconified = false
         // TODO: clear predictions after selected item
