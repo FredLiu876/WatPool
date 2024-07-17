@@ -49,8 +49,11 @@
 | June 20, 2024 | 4    | Created trip creation form     |
 
 
-| Govind        | Time | Task                             |
-|---------------|------|----------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback   |
-| June 17, 2024 | 2.5  | Welcome Page Setup and Rerouting |
-| June 17, 2024 | 1.5  | Login Page Setup and Rerouting   |
+| Govind        | Time | Task                                                               |
+|---------------|------|--------------------------------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                     |
+| June 17, 2024 | 3.5  | Welcome Page Setup and Rerouting                                   |
+| June 17, 2024 | 2.5  | Login Page Setup and Rerouting                                     |
+| July 13, 2024 | 2.5  | SignUp Page and Firebase setup                                     |
+| July 15, 2024 | 4.0  | Separate Workflows for login and signup with sustained user access |
+

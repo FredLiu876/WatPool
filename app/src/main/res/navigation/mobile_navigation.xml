@@ -32,8 +32,18 @@
     <fragment
         android:id="@+id/navigation_welcome"
         android:name="com.example.watpool.ui.welcome.WelcomeFragment"
-        android:label="@string/title_welcome"
-        tools:layout="@layout/fragment_welcome" />
+        android:label="Welcome"
+        tools:layout="@layout/fragment_welcome">
+        <action
+            android:id="@+id/action_welcome_to_login"
+            app:destination="@id/navigation_login" />
+        <action
+            android:id="@+id/action_welcome_to_signup"
+            app:destination="@id/navigation_signup" />
+        <action
+            android:id="@+id/action_welcome_to_dashboard"
+            app:destination="@id/navigation_dashboard" />
+    </fragment>
 
     <fragment
         android:id="@+id/fragment_create_trip"
@@ -43,9 +53,15 @@
 
     <fragment
         android:id="@+id/navigation_login"
-        android:name="com.example.watpool.ui.welcome.LoginFragment"
+        android:name="com.example.watpool.ui.login.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/navigation_signup"
+        android:name="com.example.watpool.ui.signup.SignUpFragment"
+        android:label="SignUp"
+        tools:layout="@layout/fragment_signup" />
 
     <fragment
         android:id="@+id/tripDetailFragment"

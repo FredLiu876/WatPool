@@ -3,5 +3,5 @@
     <item name="email" type="id" />
     <item name="password" type="id" />
     <item name="name" type="id" />
-    <item name="start_button" type="id" />
+    <item name="register_button" type="id" />
 </resources>

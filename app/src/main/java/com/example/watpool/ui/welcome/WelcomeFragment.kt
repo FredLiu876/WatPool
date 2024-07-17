@@ -8,7 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.watpool.R
 import com.example.watpool.databinding.FragmentWelcomeBinding
+import com.google.firebase.auth.FirebaseUser
 
 class WelcomeFragment : Fragment() {
     private var _binding: FragmentWelcomeBinding? = null
@@ -18,7 +20,7 @@ class WelcomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentWelcomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -28,8 +30,25 @@ class WelcomeFragment : Fragment() {
 
         (activity as AppCompatActivity).supportActionBar?.hide()
 
-        binding.buttonGetStarted.setOnClickListener {
+        viewModel.checkUserLoggedIn()
+
+        viewModel.userLiveData.observe(viewLifecycleOwner, { user ->
+            handleUserLoggedIn(user)
+        })
+
+        binding.buttonLogin.setOnClickListener {
             viewModel.onGetStartedClicked(findNavController())
+        }
+
+        binding.buttonRegister.setOnClickListener {
+            viewModel.onRegisterClicked(findNavController())
+        }
+    }
+
+    private fun handleUserLoggedIn(user: FirebaseUser?) {
+        if (user != null) {
+            // User is already logged in, navigate to the home screen
+            findNavController().navigate(R.id.navigation_dashboard)
         }
     }
 
