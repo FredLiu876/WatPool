@@ -27,6 +27,7 @@ class FirebaseAuthService : AuthService {
 
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
+    }
 
     override fun currentUser(): String {
         val user =  auth.currentUser
