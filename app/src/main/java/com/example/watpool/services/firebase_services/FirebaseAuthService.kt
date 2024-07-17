@@ -27,5 +27,13 @@ class FirebaseAuthService : AuthService {
 
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
+
+    override fun currentUser(): String {
+        val user =  auth.currentUser
+        return if (user != null)  {
+            user.uid
+        } else {
+            "Not signed in"
+        }
     }
 }

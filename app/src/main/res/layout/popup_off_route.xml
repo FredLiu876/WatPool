@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imageViewWarning"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_warning"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/buttonRecalculateRoute"
+        app:layout_constraintTop_toBottomOf="@id/textViewOffRoute"
+        app:tint="@color/red"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textViewOffRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="@string/you_are_going_off_route"
+        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+        app:layout_constraintBottom_toTopOf="@+id/buttonRecalculateRoute"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonRecalculateRoute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/recalculate_route"
+        app:layout_constraintBottom_toTopOf="@id/btn_911"
+        app:layout_constraintLeft_toRightOf="@id/imageViewWarning"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewOffRoute" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_911"
+        style="?attr/materialIconButtonFilledStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_call_911"
+        android:layout_marginHorizontal="8dp"
+        android:backgroundTint="@color/red"
+        android:textColor="@color/white"
+        app:icon="@drawable/ic_call"
+        app:iconTint="@color/white"
+        app:iconGravity="textStart"
+        app:layout_constraintTop_toBottomOf="@id/buttonRecalculateRoute"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/imageViewWarning"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

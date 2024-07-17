@@ -15,13 +15,17 @@
 | June 10, 2024 | 2    | Added current trip status bar layout    |
 | June 20, 2024 | 3    | Added safety features bottom sheet      |
 | June 22, 2024 | 5    | Added direction finding from two points |
+| July 13, 2024 | 2    | Improve route drawing accuracy          |
+| July 15, 2024 | 3    | Add off-route detection                 |
 
-| Fred          | Time | Task                                        |
-|---------------|------|---------------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback              |
-| June 18, 2024 | 1    | Created initial trip list view              |
-| June 20, 2024 | 3    | Created trip details and connected parts    |
-| June 23, 2024 | 1    | Connected trip list to trip safety features |
+| Fred          | Time | Task                                                                                           |
+|---------------|------|------------------------------------------------------------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                                                 |
+| June 18, 2024 | 1    | Created initial trip list view                                                                 |
+| June 20, 2024 | 3    | Created trip details and connected parts                                                       |
+| June 23, 2024 | 1    | Connected trip list to trip safety features                                                    |
+| July 14, 2024 | 5    | Connected database to trip list with a query joining trip confirmations, trips and user tables |
+| July 15, 2024 | 3    | Debugged issues with database queries                                                          |
 
 | Sriram        | Time | Task                           |
 |---------------|------|--------------------------------|
@@ -34,6 +38,9 @@
 | July 09, 2024 | 0.5  | Meeting for D4                 |
 | July 09, 2024 | 1.0  | User DB Service                |
 | July 10, 2024 | 1.0  | Trips DB Service               |
+| July 14, 2024 | 0.5  | Meeting for D5                 |
+| July 15, 2024 | 1.0  | Trips DB Service - P2          |
+
 
 | Arham         | Time | Task                           |
 |---------------|------|--------------------------------|
