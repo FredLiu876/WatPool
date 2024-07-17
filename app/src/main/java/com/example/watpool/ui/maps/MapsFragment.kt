@@ -15,11 +15,13 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -30,6 +32,7 @@ import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
+import com.example.watpool.ui.tripList.TripListFragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -54,6 +57,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private lateinit var searchView : SearchView
 
     private lateinit var placesFragment: PlacesFragment
+    private lateinit var tripListFragment: TripListFragment
 
     // View Models
     private val mapsViewModel: MapsViewModel by viewModels()
@@ -87,6 +91,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
+        tripListFragment.show(childFragmentManager, "TripListBottomSheet")
         val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
         postings?.addOnSuccessListener { documentSnapshot ->
             for (document in documentSnapshot) {
@@ -119,7 +124,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
 
         placesViewModel = ViewModelProvider(requireActivity())[PlacesViewModel::class.java]
-
+        tripListFragment = TripListFragment()
+        if (tripListFragment.isRemoving){
+            searchView.clearFocus()
+        }
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
@@ -161,7 +169,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         // allow for clicking anywhere on search view to search
         searchView.isIconified = false
-
         // TODO: clear predictions after selected item
         // Set search view to selected prediction
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
