@@ -30,7 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/login"
-        android:background="@color/white"
         android:textColor="@color/white"
         android:padding="16dp"
         android:layout_marginBottom="16dp"
@@ -41,7 +40,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sign_up"
-        android:background="@color/white"
         android:textColor="@color/white"
         android:padding="16dp"
         android:fontFamily="sans-serif-medium" />

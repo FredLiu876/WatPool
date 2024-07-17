@@ -32,9 +32,9 @@ class WelcomeFragment : Fragment() {
 
         viewModel.checkUserLoggedIn()
 
-        viewModel.userLiveData.observe(viewLifecycleOwner, { user ->
+        viewModel.userLiveData.observe(viewLifecycleOwner) { user ->
             handleUserLoggedIn(user)
-        })
+        }
 
         binding.buttonLogin.setOnClickListener {
             viewModel.onGetStartedClicked(findNavController())

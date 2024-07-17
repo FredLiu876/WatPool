@@ -25,9 +25,4 @@ class LoginViewModel : ViewModel() {
             }
         }
     }
-
-//    fun logoutUser() {
-//        FirebaseAuth.getInstance().signOut()
-//        _userLiveData.value = null
-//    }
 }
