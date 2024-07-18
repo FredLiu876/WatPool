@@ -228,6 +228,7 @@ class create_trip : Fragment() {
             // for debugging saveTrip
             firebaseService?.let { service ->
                 viewModel.fetchTripsForCurrentUser(service)
+                viewModel.fetchAllCoordinatesForCurrentUser(service)
             }
         })
 

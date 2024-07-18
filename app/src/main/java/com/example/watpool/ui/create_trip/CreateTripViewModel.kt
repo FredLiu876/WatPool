@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.example.watpool.BuildConfig
 import com.example.watpool.R
 import android.util.Log
 import com.example.watpool.services.FirebaseService
@@ -12,6 +13,10 @@ import java.time.LocalDate
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.URL
 
 class CreateTripViewModel : ViewModel() {
 
@@ -59,19 +64,24 @@ class CreateTripViewModel : ViewModel() {
     }
 
     fun saveTrip(firebaseService: FirebaseService) {
-        // TODO: Add loading animation (saving a trip to the db takes ~1 min)
         viewModelScope.launch {
             try {
                 val driverId = firebaseService.currentUser()
 
-                // get from the maps UI
-                val startLatitude = 0.0
-                val startLongitude = 0.0
-                val endLatitude = 0.0
-                val endLongitude = 0.0
-
                 val startLocation = _pickupLocation.value ?: ""
                 val endLocation = _destination.value ?: ""
+
+                // TODO: get coords from the maps UI?
+                var start = getCoordinates(startLocation)
+                val startLatitude = start.first
+                val startLongitude = start.second
+
+                val end = getCoordinates(endLocation)
+                val endLatitude = end.first
+                val endLongitude = end.second
+
+                Log.d("CreateTripViewModel", "Start location is ${startLatitude}, ${startLongitude}")
+                Log.d("CreateTripViewModel", "End location is ${endLatitude}, ${endLongitude}")
 
                 val dateFormatter = DateTimeFormatter.ofPattern("d-M-yyyy")
                 val tripDate = LocalDate.parse(_selectedDate.value, dateFormatter)
@@ -134,6 +144,39 @@ class CreateTripViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("CreateTripViewModel", "Error fetching all user trips", e)
             }
+        }
+    }
+
+    fun fetchAllCoordinatesForCurrentUser(firebaseService: FirebaseService) {
+        viewModelScope.launch {
+            val driverId = firebaseService.currentUser()
+            firebaseService.fetchCoordinatesByDriverId(driverId)
+                .addOnSuccessListener { querySnapshot ->
+                    for (document in querySnapshot.documents) {
+                        val documentId = document.id
+                        val documentData = document.data
+                        Log.d("Coordinates", "Document ID: $documentId, Data: $documentData")
+                    }
+                }.addOnFailureListener { e ->
+                Log.e("Coordinates", "Error fetching coordinates: ${e.message}", e)
+            }
+        }
+    }
+
+    suspend fun getCoordinates(address: String): Pair<Double, Double> {
+        return withContext(Dispatchers.IO) {
+            val apiKey = BuildConfig.MAPS_API_KEY
+
+            val url = "https://maps.googleapis.com/maps/api/geocode/json?address=${address.replace(" ", "+")}&key=$apiKey"
+            val response = URL(url).readText()
+            val json = JSONObject(response)
+
+            val location = json.getJSONArray("results")
+                .getJSONObject(0)
+                .getJSONObject("geometry")
+                .getJSONObject("location")
+
+            Pair(location.getDouble("lat"), location.getDouble("lng"))
         }
     }
 }
