@@ -224,6 +224,11 @@ class create_trip : Fragment() {
             if (status.startsWith("Trip created successfully")) {
                 viewModel.onCreateTrip(findNavController())
             }
+
+            // for debugging saveTrip
+            firebaseService?.let { service ->
+                viewModel.fetchTripsForCurrentUser(service)
+            }
         })
 
         pickupSearchView.requestFocus()

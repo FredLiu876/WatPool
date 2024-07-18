@@ -98,17 +98,6 @@ class CreateTripViewModel : ViewModel() {
                 val currentUserId = firebaseService.currentUser()
                 Log.d("CreateTripViewModel", "current user ID is ${currentUserId}")
 
-                try {
-                    val querySnapshot = firebaseService.fetchUsersById(currentUserId).await()
-                    for (document in querySnapshot.documents) {
-                        val userId = document.id
-                        val userData = document.data
-                        Log.d("CreateTripViewModel", "User ID: $userId, Data: $userData")
-                    }
-                } catch (e: Exception) {
-                    Log.d("CreateTripViewModel", "Error getting documents: ${e.message}")
-                }
-
                 Log.d("CreateTripViewModel","Trip created successfully")
 
             } catch (e: Exception) {
@@ -124,6 +113,8 @@ class CreateTripViewModel : ViewModel() {
             Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
             Log.d("CreateTripViewModel", "Number of Available Seats: ${_numAvailableSeats.value}")
         }
+
+    // Used for debugging to make sure that trips are being added correctly
     fun fetchTripsForCurrentUser(firebaseService: FirebaseService) {
         viewModelScope.launch {
             try {
@@ -131,6 +122,12 @@ class CreateTripViewModel : ViewModel() {
                 if (currentUserId.isNotEmpty()) {
                     val trips = firebaseService.fetchTripsByDriverId(currentUserId).await()
                     Log.d("CreateTripViewModel", "Fetched ${trips.size} trips for user $currentUserId")
+
+                    for (document in trips) {
+                        val userId = document.id
+                        val userData = document.data
+                        Log.d("CreateTripViewModel", "User ID: $userId, Data: $userData")
+                    }
                 } else {
                     Log.e("CreateTripViewModel", "No current user found")
                 }
