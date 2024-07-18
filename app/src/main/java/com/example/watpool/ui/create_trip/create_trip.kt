@@ -46,6 +46,9 @@ class create_trip : Fragment() {
     private lateinit var destinationPlacesFragment: PlacesFragment
     private var isSelectionInProgress = false
 
+    private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -208,8 +211,46 @@ class create_trip : Fragment() {
         pickupSearchView.requestFocus()
     }
 
+    override fun onStart() {
+        super.onStart()
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        if (firebaseBound) {
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
         _binding = null
+    }
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+            firebaseBound = true
+
+            // Fetch trips once the service is connected
+            firebaseService?.let {
+                //val riderId = it.currentUser()
+                val riderId = "user_id_1"
+                tripListViewModel.fetchConfirmedTrips(it, riderId)
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            firebaseBound = false
+        }
     }
 }
