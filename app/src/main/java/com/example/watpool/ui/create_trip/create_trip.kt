@@ -4,14 +4,20 @@ import PlacesFragment
 import PlacesViewModel
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.os.IBinder
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -21,6 +27,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.R
+import com.example.watpool.services.FirebaseService
 
 class create_trip : Fragment() {
 
@@ -205,7 +212,11 @@ class create_trip : Fragment() {
 
         createTripBtn.setOnClickListener {
             viewModel.setNumAvailableSeats(binding.numAvailableSeats.text.toString())
-            viewModel.saveTrip()
+            firebaseService?.let { service ->
+                viewModel.saveTrip(service)
+            } ?: run {
+                Toast.makeText(context, "Firebase service not available", Toast.LENGTH_SHORT).show()
+            }
             viewModel.onCreateTrip(findNavController())
         }
         pickupSearchView.requestFocus()
@@ -240,13 +251,6 @@ class create_trip : Fragment() {
             val binder = service as FirebaseService.FirebaseBinder
             firebaseService = binder.getService()
             firebaseBound = true
-
-            // Fetch trips once the service is connected
-            firebaseService?.let {
-                //val riderId = it.currentUser()
-                val riderId = "user_id_1"
-                tripListViewModel.fetchConfirmedTrips(it, riderId)
-            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
