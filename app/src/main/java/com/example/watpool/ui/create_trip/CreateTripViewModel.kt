@@ -3,9 +3,15 @@ package com.example.watpool.ui.create_trip
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.watpool.R
 import android.util.Log
+import com.example.watpool.services.FirebaseService
+import java.time.LocalDate
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.time.format.DateTimeFormatter
 
 class CreateTripViewModel : ViewModel() {
 
@@ -23,6 +29,9 @@ class CreateTripViewModel : ViewModel() {
 
     private val _numAvailableSeats = MutableLiveData<String>()
     val numAvailableSeats: LiveData<String> get() = _numAvailableSeats
+
+    private val _tripCreationStatus = MutableLiveData<String>()
+    val tripCreationStatus: LiveData<String> get() = _tripCreationStatus
 
     fun setPickupLocation(location: String) {
         _pickupLocation.value = location
@@ -49,14 +58,85 @@ class CreateTripViewModel : ViewModel() {
         navController.navigate(R.id.navigation_dashboard)
     }
 
-    fun saveTrip() {
-        // end goal of this function is to save trip data to database
+    fun saveTrip(firebaseService: FirebaseService) {
+        // TODO: Add loading animation (saving a trip to the db takes ~1 min)
+        viewModelScope.launch {
+            try {
+                val driverId = firebaseService.currentUser()
 
-        // logged data can be seen in Logcat tab
-        Log.d("CreateTripViewModel", "Pickup Location: ${_pickupLocation.value}")
-        Log.d("CreateTripViewModel", "Destination: ${_destination.value}")
-        Log.d("CreateTripViewModel", "Selected Date: ${_selectedDate.value}")
-        Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
-        Log.d("CreateTripViewModel", "Number of Available Seats: ${_numAvailableSeats.value}")
+                // get from the maps UI
+                val startLatitude = 0.0
+                val startLongitude = 0.0
+                val endLatitude = 0.0
+                val endLongitude = 0.0
+
+                val startLocation = _pickupLocation.value ?: ""
+                val endLocation = _destination.value ?: ""
+
+                val dateFormatter = DateTimeFormatter.ofPattern("d-M-yyyy")
+                val tripDate = LocalDate.parse(_selectedDate.value, dateFormatter)
+                val maxPassengers = _numAvailableSeats.value ?: "0"
+
+                val result = firebaseService.createTrip(
+                    driverId,
+                    startLatitude,
+                    endLatitude,
+                    startLongitude,
+                    endLongitude,
+                    startLocation,
+                    endLocation,
+                    tripDate,
+                    maxPassengers
+                ).await()
+
+                result.addOnSuccessListener { documentReference ->
+                    _tripCreationStatus.postValue("Trip created successfully with ID: ${documentReference.id}")
+                }.addOnFailureListener { e ->
+                    _tripCreationStatus.postValue("Error creating trip: ${e.message}")
+                }
+
+                val currentUserId = firebaseService.currentUser()
+                Log.d("CreateTripViewModel", "current user ID is ${currentUserId}")
+
+                try {
+                    val querySnapshot = firebaseService.fetchUsersById(currentUserId).await()
+                    for (document in querySnapshot.documents) {
+                        val userId = document.id
+                        val userData = document.data
+                        Log.d("CreateTripViewModel", "User ID: $userId, Data: $userData")
+                    }
+                } catch (e: Exception) {
+                    Log.d("CreateTripViewModel", "Error getting documents: ${e.message}")
+                }
+
+                Log.d("CreateTripViewModel","Trip created successfully")
+
+            } catch (e: Exception) {
+                _tripCreationStatus.postValue("Error creating trip: ${e.message}")
+                Log.e("CreateTripViewModel","Error creating trip: ${e.message}")
+            }
+        }
+
+            // logged data can be seen in Logcat tab
+            Log.d("CreateTripViewModel", "Pickup Location: ${_pickupLocation.value}")
+            Log.d("CreateTripViewModel", "Destination: ${_destination.value}")
+            Log.d("CreateTripViewModel", "Selected Date: ${_selectedDate.value}")
+            Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
+            Log.d("CreateTripViewModel", "Number of Available Seats: ${_numAvailableSeats.value}")
+        }
+    fun fetchTripsForCurrentUser(firebaseService: FirebaseService) {
+        viewModelScope.launch {
+            try {
+                val currentUserId = firebaseService.currentUser()
+                if (currentUserId.isNotEmpty()) {
+                    val trips = firebaseService.fetchTripsByDriverId(currentUserId).await()
+                    Log.d("CreateTripViewModel", "Fetched ${trips.size} trips for user $currentUserId")
+                } else {
+                    Log.e("CreateTripViewModel", "No current user found")
+                }
+            } catch (e: Exception) {
+                Log.e("CreateTripViewModel", "Error fetching all user trips", e)
+            }
+        }
     }
 }
