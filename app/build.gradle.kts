@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.android.navigation.safe.args)
+
 }
 
 android {
@@ -79,4 +80,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+    implementation("com.github.cachapa:ExpandableLayout:2.9.2")
 }

@@ -85,6 +85,9 @@
         <action
             android:id="@+id/action_tripListFragment_to_isCurrentTripFragment"
             app:destination="@id/isCurrentTripFragment" />
+        <action
+            android:id="@+id/action_tripListFragment_to_tripDetailFragment"
+            app:destination="@id/tripDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/isCurrentTripFragment"
