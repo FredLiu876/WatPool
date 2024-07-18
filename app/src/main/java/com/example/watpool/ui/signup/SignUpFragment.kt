@@ -1,6 +1,11 @@
 package com.example.watpool.ui.signup
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +16,28 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentSignupBinding
+import com.example.watpool.services.FirebaseService
+import com.example.watpool.services.LocationService
 import com.google.firebase.auth.FirebaseUser
 
 class SignUpFragment : Fragment() {
     private var _binding: FragmentSignupBinding? = null
     private val binding get() = _binding!!
     private val viewModel: SignUpViewModel by viewModels()
+    private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+            firebaseBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            firebaseBound = false
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?
@@ -35,6 +56,7 @@ class SignUpFragment : Fragment() {
             val password = binding.password.text.toString()
             val name = binding.name.text.toString()
             viewModel.registerUser(email, password, name)
+            firebaseService?.createUser(email, name)
         }
 
         viewModel.userLiveData.observe(viewLifecycleOwner) { user ->
@@ -48,6 +70,13 @@ class SignUpFragment : Fragment() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
+    }
+
     private fun handleSignUpResult(user: FirebaseUser?) {
         if (user != null) {
             // Handle successful registration
@@ -57,6 +86,10 @@ class SignUpFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        if(firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
         (activity as AppCompatActivity).supportActionBar?.show()
         _binding = null
     }

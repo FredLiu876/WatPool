@@ -94,8 +94,8 @@ class FirebaseService : Service() {
     fun fetchUsersByUsername(username: String) : Task<QuerySnapshot> {
         return userService.fetchUsersByUsername(username)
     }
-    fun createUser(username: String, name: String, phone: String) : Task<DocumentReference> {
-        return userService.createUser(username, name, phone)
+    fun createUser(email: String, name: String) : Task<DocumentReference> {
+        return userService.createUser(email, name)
     }
     fun createDriver(username: String, licenseNumber: String, carModel: String, carColor: String ) : Task<Void> {
         return userService.createDriver(username, licenseNumber, carModel, carColor)
