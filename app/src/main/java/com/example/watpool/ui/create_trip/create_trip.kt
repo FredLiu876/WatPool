@@ -217,8 +217,15 @@ class create_trip : Fragment() {
             } ?: run {
                 Toast.makeText(context, "Firebase service not available", Toast.LENGTH_SHORT).show()
             }
-            viewModel.onCreateTrip(findNavController())
         }
+
+        viewModel.tripCreationStatus.observe(viewLifecycleOwner, Observer { status ->
+            Toast.makeText(context, status, Toast.LENGTH_LONG).show()
+            if (status.startsWith("Trip created successfully")) {
+                viewModel.onCreateTrip(findNavController())
+            }
+        })
+
         pickupSearchView.requestFocus()
     }
 
