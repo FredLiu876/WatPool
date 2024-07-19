@@ -26,12 +26,22 @@
         android:layout_marginBottom="32dp" />
 
     <Button
-        android:id="@+id/buttonGetStarted"
+        android:id="@+id/buttonLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/let_s_get_started"
-        android:background="@color/white"
+        android:text="@string/login"
+        android:textColor="@color/white"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="sans-serif-medium" />
+
+    <Button
+        android:id="@+id/buttonRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_up"
         android:textColor="@color/white"
         android:padding="16dp"
         android:fontFamily="sans-serif-medium" />
+
 </LinearLayout>
