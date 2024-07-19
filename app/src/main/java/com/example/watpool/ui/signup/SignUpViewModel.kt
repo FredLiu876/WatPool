@@ -1,9 +1,12 @@
 package com.example.watpool.ui.signup
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.firebase_services.FirebaseAuthService
+import com.example.watpool.services.firebase_services.FirebaseUserService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
@@ -12,6 +15,7 @@ class SignUpViewModel : ViewModel() {
 
     private val _userLiveData = MutableLiveData<FirebaseUser?>()
     val userLiveData: LiveData<FirebaseUser?> = _userLiveData
+
 
     private val _errorLiveData = MutableLiveData<String?>()
     val errorLiveData: LiveData<String?> = _errorLiveData

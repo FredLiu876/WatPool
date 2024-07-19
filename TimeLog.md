@@ -55,6 +55,11 @@
 | June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                     |
 | June 17, 2024 | 3.5  | Welcome Page Setup and Rerouting                                   |
 | June 17, 2024 | 2.5  | Login Page Setup and Rerouting                                     |
+| June 22, 2024 | 0.5  | D3 Presentation Prep                                               |
+| July 09, 2024 | 0.5  | Meeting for D4                                                     |
 | July 13, 2024 | 2.5  | SignUp Page and Firebase setup                                     |
+| July 14, 2024 | 0.5  | Meeting for D5                                                     |
 | July 15, 2024 | 4.0  | Separate Workflows for login and signup with sustained user access |
+| July 18, 2024 | 4.0  | Profile Screen and Logout functionality                            |
+
 

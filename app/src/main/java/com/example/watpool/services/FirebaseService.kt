@@ -91,11 +91,11 @@ class FirebaseService : Service() {
     fun fetchUsersById(id: String): Task<QuerySnapshot> {
         return userService.fetchUsersById(id)
     }
-    fun fetchUsersByUsername(username: String) : Task<QuerySnapshot> {
-        return userService.fetchUsersByUsername(username)
+    fun fetchUsersByUsername(email: String) : Task<QuerySnapshot> {
+        return userService.fetchUsersByUsername(email)
     }
-    fun createUser(username: String, name: String, phone: String) : Task<DocumentReference> {
-        return userService.createUser(username, name, phone)
+    fun createUser(email: String, name: String) : Task<DocumentReference> {
+        return userService.createUser(email, name)
     }
     fun createDriver(username: String, licenseNumber: String, carModel: String, carColor: String ) : Task<Void> {
         return userService.createDriver(username, licenseNumber, carModel, carColor)
