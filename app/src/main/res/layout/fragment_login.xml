@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#0099FF"
     android:padding="16dp">
 
     <ImageView
@@ -19,7 +18,6 @@
         android:layout_height="wrap_content"
         android:text="@string/watpool"
         android:textSize="32sp"
-        android:textColor="@android:color/white"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp" />
 
@@ -28,7 +26,6 @@
         android:layout_height="wrap_content"
         android:text="@string/join_today"
         android:textSize="20sp"
-        android:textColor="@android:color/white"
         android:layout_marginBottom="24dp" />
 
     <EditText
@@ -37,11 +34,8 @@
         android:layout_height="wrap_content"
         android:autofillHints="Email"
         android:hint="@string/email"
-        android:textColorHint="@color/black"
         android:inputType="textEmailAddress"
         android:padding="12dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/black"
         android:layout_marginBottom="8dp" />
 
     <EditText
@@ -50,10 +44,7 @@
         android:layout_height="wrap_content"
         android:autofillHints="Password"
         android:hint="@string/password"
-        android:textColorHint="@color/black"
         android:padding="12dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/black"
         android:inputType="textPassword"
         android:layout_marginBottom="8dp" />
 
@@ -63,11 +54,8 @@
         android:layout_height="wrap_content"
         android:autofillHints="Name"
         android:hint="@string/name"
-        android:textColorHint="@color/black"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/black"
         android:layout_marginBottom="16dp" />
 
     <Button
@@ -75,8 +63,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/start"
-        android:backgroundTint="@android:color/holo_blue_light"
-        android:textColor="@android:color/white"
-        android:background="@android:color/white"
         android:elevation="4dp"/>
 </LinearLayout>

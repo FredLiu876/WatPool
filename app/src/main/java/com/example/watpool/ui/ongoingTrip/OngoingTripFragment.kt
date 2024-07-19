@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
@@ -31,18 +32,19 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.button.MaterialButton
-import org.json.JSONObject
+import com.google.android.material.textview.MaterialTextView
 import kotlin.math.max
 
 
 class OngoingTripFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var tripId: String
-    private var tripOrigin: LatLng = LatLng(43.4698361, -80.5164223)
+    private var tripOrigin: LatLng = LatLng(43.473070, -80.532100)
     private var tripDestination: LatLng = LatLng(43.4698361, -80.5164223)
     private var _binding: FragmentOngoingTripBinding? = null
 
@@ -70,6 +72,12 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
     // Stored locations
     private var userLocation: Location? = null
     private var currentPoints = ArrayList<LatLng>()
+    private var distanceAndDuration = ArrayList<Pair<Double,Double>>()
+    private var distanceRemain = 0.0
+    private var durationRemain = 0.0
+    private lateinit var textViewDistanceRemain: MaterialTextView
+    private lateinit var textViewDurationRemain: MaterialTextView
+
 
     // Create location service and bool value for to know when to bind it and clean up
     private var locationService: LocationService? = null
@@ -98,27 +106,51 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             tripDestination = it
         }
 
+        // get views
+        textViewDistanceRemain = binding.textDistanceRemain
+
         // Bottom of map safety sheet bindings and listener
-        val buttonOpenBottomSheet: MaterialButton = binding.btnSafety
-        buttonOpenBottomSheet.setOnClickListener {
+        val buttonSafety: MaterialButton = binding.btnSafety
+        buttonSafety.setOnClickListener {
             val bottomSheet = SafetyBottomSheetDialog()
             bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
         }
 
-        val buttonFindRoute: MaterialButton = binding.findRoute
-        buttonFindRoute.setOnClickListener {
+        val buttonStartTrip: MaterialButton = binding.findRoute
+        buttonStartTrip.setOnClickListener {
             // Fetch and draw the route once the map is ready
-            val origin =  map?.cameraPosition?.target// Example origin
-            origin?.let {
-                val originLatLng = LatLng(origin.latitude, origin.longitude)
-                calculateRoute(originLatLng, tripDestination)
+            val results = FloatArray(1)
+            userLocation?.let { loc ->
+                Location.distanceBetween(
+                    loc.latitude, loc.longitude,
+                    tripOrigin.latitude, tripOrigin.longitude,
+                    results
+                )
             }
-            startOffRouteCheck()
+            if (results[0] <= offRouteThreshold) {
+                calculateRoute(tripOrigin, tripDestination)
+                startOffRouteCheck()
+                // make visible and invisible
+                textViewDistanceRemain.visibility = View.VISIBLE
+                buttonSafety.visibility = View.VISIBLE
+                buttonStartTrip.visibility = View.GONE
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Warning")
+                    .setMessage("You are not within $offRouteThreshold meters of the start location. Please move closer to the start location.")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            }
         }
 
-        mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
-            directions?.let {
+        mapsViewModel.routePoints.observe(viewLifecycleOwner, Observer { routePoints ->
+            routePoints?.let {
                 drawRoute(it)
+            }
+        })
+        mapsViewModel.distanceDuration.observe(viewLifecycleOwner, Observer { distanceDuration ->
+            distanceDuration?.let {
+                distanceAndDuration = it
             }
         })
 
@@ -144,6 +176,10 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             }
             googleMap.setOnMyLocationButtonClickListener {
                 isCenteredOnUser = true
+                userLocation?.let { location ->
+                    val userLatLng = LatLng(location.latitude, location.longitude)
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
+                }
                 true
             }
             isMapReady = true
@@ -234,80 +270,26 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    private fun drawRoute(directions: String) {
+    private fun drawRoute(points: ArrayList<LatLng>) {
         try {
-            val jsonObject = JSONObject(directions)
-            val routes = jsonObject.getJSONArray("routes")
-            val points = ArrayList<LatLng>()
             val polylineOptions = PolylineOptions()
-
-            for (i in 0 until routes.length()) {
-                val route = routes.getJSONObject(i)
-                val legs = route.getJSONArray("legs")
-
-                for (j in 0 until legs.length()) {
-                    val leg = legs.getJSONObject(j)
-                    val steps = leg.getJSONArray("steps")
-
-                    for (k in 0 until steps.length()) {
-                        val step = steps.getJSONObject(k)
-                        val polyline = step.getJSONObject("polyline").getString("points")
-                        val decodedPoints = decodePolyline(polyline)
-                        points.addAll(decodedPoints)
-//                        Legacy route drawn was too rough
-//                        val point = step.getJSONObject("start_location")
-//                        val lat: Double = point.getDouble("lat")
-//                        val lng: Double = point.getDouble("lng")
-//                        val position = LatLng(lat, lng)
-//                        points.add(position)
-                    }
-                }
-            }
             polylineOptions.addAll(points)
             polylineOptions.width(12f)
             polylineOptions.geodesic(true)
+            polylineOptions.color(Color.parseColor("#4285F4"))
             map?.addPolyline(polylineOptions)
+            // add origin marker
+            map?.addCircle(CircleOptions()
+                .center(points[0])
+                .radius(5.0)
+                .strokeColor(Color.GRAY)
+                .fillColor(Color.WHITE)
+                .strokeWidth(5f)
+            )
             currentPoints = points
         } catch (e: Exception) {
             Log.e("Draw route Exception", e.toString())
         }
-    }
-
-    // Function to decode polyline points, decode code from https://stackoverflow.com/questions/39851243/android-ios-decode-polyline-string
-    private fun decodePolyline(encoded: String): List<LatLng> {
-        val poly = ArrayList<LatLng>()
-        var index = 0
-        val len = encoded.length
-        var lat = 0
-        var lng = 0
-
-        while (index < len) {
-            var b: Int
-            var shift = 0
-            var result = 0
-            do {
-                b = encoded[index++].code - 63
-                result = result or (b and 0x1f shl shift)
-                shift += 5
-            } while (b >= 0x20)
-            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-            lat += dlat
-
-            shift = 0
-            result = 0
-            do {
-                b = encoded[index++].code - 63
-                result = result or (b and 0x1f shl shift)
-                shift += 5
-            } while (b >= 0x20)
-            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-            lng += dlng
-
-            val p = LatLng(lat / 1E5, lng / 1E5)
-            poly.add(p)
-        }
-
-        return poly
     }
 
     // check for user going off-route
@@ -340,20 +322,37 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
 
     private fun isOffRoute(userLocation: Location): Boolean {
         if (currentPoints.isEmpty()) return false
-        for (routePoint in currentPoints) {
+        for (i in currentPoints.indices) {
             val distance = FloatArray(1)
             Location.distanceBetween(
                 userLocation.latitude, userLocation.longitude,
-                routePoint.latitude, routePoint.longitude,
+                currentPoints[i].latitude, currentPoints[i].longitude,
                 distance
             )
             if (distance[0] <= offRouteThreshold) {
+                distanceRemain = distanceAndDuration.last().first - distanceAndDuration[i].first
+                durationRemain = distanceAndDuration.last().second - distanceAndDuration[i].second
+                textViewDistanceRemain.text = formatDistance(distanceRemain)
                 return false
             }
         }
         return true
     }
-
+    private fun formatDistance(distanceMeters: Double): String {
+        // Convert meters to kilometers
+        val distanceKm = distanceMeters / 1000.0
+        return getString(R.string.distance_remaining, distanceKm)
+    }
+    private fun formatDuration(seconds: Double): String {
+        val minutes = seconds / 60
+        return if (minutes < 60) {
+            getString(R.string.duration_remaining_minutes, minutes)
+        } else {
+            val hours = minutes / 60
+            val remainingMinutes = minutes % 60
+            getString(R.string.duration_remaining, hours, remainingMinutes)
+        }
+    }
     private fun stopOffRouteMonitoring() {
         checkOffRouteRunner?.let {
             offRouteHandler.removeCallbacks(it)
@@ -407,7 +406,8 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             destination
         )
         map?.clear()
-        map?.addMarker(MarkerOptions().position(origin))
+
+        // add destination marker
         map?.addMarker(MarkerOptions().position(destination))
     }
 

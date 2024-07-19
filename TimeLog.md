@@ -17,6 +17,7 @@
 | June 22, 2024 | 5    | Added direction finding from two points |
 | July 13, 2024 | 2    | Improve route drawing accuracy          |
 | July 15, 2024 | 3    | Add off-route detection                 |
+| July 18, 2024 | 5    | Change theme and refactor start trip    |
 
 | Fred          | Time | Task                                        |
 |---------------|------|---------------------------------------------|
