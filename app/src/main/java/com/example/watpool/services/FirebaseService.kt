@@ -108,8 +108,8 @@ class FirebaseService : Service() {
             coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
         ).continueWith { tasks ->
             if (tasks.isSuccessful) {
-                val startingCoordinateId = (tasks.result[0].result as? DocumentSnapshot)?.getString("id") ?: ""
-                val endingCoordinateId = (tasks.result[1].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val startingCoordinateId = (tasks.result[0].result as? DocumentReference)?.id ?: ""
+                val endingCoordinateId = (tasks.result[1].result as? DocumentReference)?.id ?: ""
                 val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
                 val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
                 tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
