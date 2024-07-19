@@ -20,8 +20,8 @@ class FirebaseUserService: UserService {
     override fun fetchUsersById(id: String): Task<QuerySnapshot> {
         return usersRef.whereEqualTo("id", id).get()
     }
-    override fun fetchUsersByUsername(username: String): Task<QuerySnapshot> {
-        return usersRef.whereEqualTo("username", username).get()
+    override fun fetchUsersByUsername(email: String): Task<QuerySnapshot> {
+        return usersRef.whereEqualTo("email", email).get()
     }
 
     override fun createUser(email: String, name: String): Task<DocumentReference> {

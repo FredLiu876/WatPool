@@ -34,4 +34,9 @@
     <string name="profile">Profile</string>
     <string name="logout">Logout</string>
     <string name="lets_login">Let\'s Login!</string>
+    <string name="namee">Name:</string>
+    <string name="n_a">N/A</string>
+    <string name="emaill">Email:</string>
+    <string name="rider_rating">Rider Rating:</string>
+    <string name="driver_rating">Driver Rating:</string>
 </resources>
