@@ -26,7 +26,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/join_today"
+        android:text="@string/lets_login"
         android:textSize="20sp"
         android:textColor="@android:color/white"
         android:layout_marginBottom="24dp" />
@@ -37,11 +37,10 @@
         android:layout_height="wrap_content"
         android:autofillHints="Email"
         android:hint="@string/email"
-        android:textColorHint="@color/black"
+        android:textColorHint="@android:color/white"
         android:inputType="textEmailAddress"
         android:padding="12dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:layout_marginBottom="8dp" />
 
     <EditText
@@ -49,11 +48,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="Password"
+        android:textColorHint="@android:color/white"
         android:hint="@string/password"
-        android:textColorHint="@color/black"
         android:padding="12dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:inputType="textPassword"
         android:layout_marginBottom="8dp" />
 
@@ -62,8 +60,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/login"
-        android:backgroundTint="@android:color/holo_blue_light"
         android:textColor="@android:color/white"
-        android:background="@android:color/white"
         android:elevation="4dp"/>
 </LinearLayout>

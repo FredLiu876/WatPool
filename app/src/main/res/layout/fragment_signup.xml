@@ -7,12 +7,38 @@
     android:background="#0099FF"
     android:padding="16dp">
 
+    <ImageView
+        android:id="@+id/imageCar"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/ic_logo"
+        android:contentDescription="@string/app_name" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/watpool"
+        android:textSize="32sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/join_today"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="24dp" />
+
     <EditText
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="Name"
+        android:textColorHint="@android:color/white"
         android:hint="@string/name"
+        android:textColor="@color/white"
         android:inputType="textPersonName"/>
 
     <EditText
@@ -20,7 +46,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="Email"
+        android:textColorHint="@android:color/white"
         android:hint="@string/email"
+        android:textColor="@color/white"
         android:inputType="textEmailAddress"/>
 
     <EditText
@@ -28,7 +56,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:autofillHints="Password"
+        android:textColorHint="@android:color/white"
         android:hint="@string/password"
+        android:textColor="@color/white"
         android:inputType="textPassword"/>
 
     <Button

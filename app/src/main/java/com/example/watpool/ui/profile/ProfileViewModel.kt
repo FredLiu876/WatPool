@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
 class ProfileViewModel : ViewModel() {
-    //private val authService = FirebaseAuthService()
     private val _userLiveData = MutableLiveData<FirebaseUser?>()
     val userLiveData: LiveData<FirebaseUser?> = _userLiveData
 

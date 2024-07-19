@@ -33,4 +33,5 @@
     <string name="you_are_going_off_route">You are going off-route!</string>
     <string name="profile">Profile</string>
     <string name="logout">Logout</string>
+    <string name="lets_login">Let\'s Login!</string>
 </resources>
