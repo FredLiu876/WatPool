@@ -10,16 +10,15 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class TripDetailFragment : Fragment() {
+class TripDetailFragment : BottomSheetDialogFragment() {
 
     private lateinit var tripId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            tripId = TripDetailFragmentArgs.fromBundle(it).tripId
-        }
+
     }
 
     override fun onCreateView(
@@ -27,6 +26,15 @@ class TripDetailFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        if(dialog == null){
+            arguments?.let {
+                tripId = TripDetailFragmentArgs.fromBundle(it).tripId
+            }
+        } else {
+            tag?.let {
+                tripId = it
+            }
+        }
         return inflater.inflate(R.layout.fragment_trip_detail, container, false)
     }
 
@@ -43,8 +51,12 @@ class TripDetailFragment : Fragment() {
 
         backButton.setOnClickListener {
             // Navigate back to previous fragment
-            val action = TripDetailFragmentDirections.actionTripDetailFragmentToTripListFragment()
-            findNavController().navigate(action)
+            if(dialog == null){
+                val action = TripDetailFragmentDirections.actionTripDetailFragmentToTripListFragment()
+                findNavController().navigate(action)
+            } else {
+                dismiss()
+            }
         }
     }
 }

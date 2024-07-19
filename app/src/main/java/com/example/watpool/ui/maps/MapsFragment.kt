@@ -8,10 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +29,7 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
@@ -93,7 +96,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
         searchView.clearFocus()
         tripListFragment.show(childFragmentManager, "TripListBottomSheet")
-        val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
+
+
+
+        /*val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
         postings?.addOnSuccessListener { documentSnapshot ->
             for (document in documentSnapshot) {
                 val dataModel = document.toObject(Coordinate::class.java)
@@ -104,7 +110,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         }?.addOnFailureListener {
             Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
-        }
+        }*/
     }
 
     override fun onCreateView(
@@ -235,11 +241,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             map = googleMap
             googleMap.isBuildingsEnabled = true
             isMapReady = true
-            userLocation?.let { moveMapCamera(it) }
+            googleMap.setOnMapLongClickListener {
+                createTrip(it)
+            }
             googleMap.setOnCameraIdleListener {
                 drawRadius()
             }
+
         }
+    }
+
+    fun createTrip(destination: LatLng){
+        Toast.makeText(requireContext(), "Create trip", Toast.LENGTH_SHORT).show()
+        val action = MapsFragmentDirections.actionMapToFragmentCreateTrip(getLocationFromCoordinate(destination))
+        findNavController().navigate(action)
     }
     override fun onMapReady(p0: GoogleMap) {
         map = p0
@@ -367,6 +382,25 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getLocationFromCoordinate(location: LatLng) : String{
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            // Using deprecated function because newer version does not work with out min sdk setup
+            // If min sdk updated replace with geocoder listener setup in android documentation
+            val addressList = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            if (!addressList.isNullOrEmpty()) {
+                val address = addressList[0]
+                return address.getAddressLine(0)
+            } else {
+                Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+                return ""
+            }
+        } catch (e: IOException) {
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            return ""
         }
     }
 }

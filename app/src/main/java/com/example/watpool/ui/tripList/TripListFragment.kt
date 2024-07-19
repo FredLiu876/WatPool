@@ -47,7 +47,7 @@ class TripListFragment :  BottomSheetDialogFragment() {
                 val action = TripListFragmentDirections.actionTripListFragmentToIsCurrentTripFragment(trip.id)
                 findNavController().navigate(action)
             } else {
-
+                showTripDetailsSheet(trip.id)
             }
         }
 
@@ -63,6 +63,11 @@ class TripListFragment :  BottomSheetDialogFragment() {
         // Bind to FirebaseService
         val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
         requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun showTripDetailsSheet(tripId: String) {
+        val tripDetailFragment = TripDetailFragment()
+        tripDetailFragment.show(childFragmentManager, tripId)
     }
 
     override fun onStart() {

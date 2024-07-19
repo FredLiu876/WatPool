@@ -9,7 +9,8 @@
 | June 20, 2024 | 3    | Added Radius Search and updated map                       |
 | June 20, 2024 | 0.5  | Integrated radius search with db                          |
 | July 8, 2024  | 2    | Added places api integration and destination autofill     |
-| July 15, 2024 | 0.5  | Removed demo maps functionality and fixed prediction bugs |
+| July 15, 2024 | 1    | Removed demo maps functionality and fixed prediction bugs |
+| July 15, 2024 | 2    | Display Trip List in maps fragment and bug fixes          |
 
 | James         | Time | Task                                    |
 |---------------|------|-----------------------------------------|

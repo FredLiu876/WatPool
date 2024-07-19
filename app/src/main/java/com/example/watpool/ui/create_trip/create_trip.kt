@@ -21,6 +21,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.R
+import com.google.android.material.button.MaterialButton
 
 class create_trip : Fragment() {
 
@@ -34,11 +35,12 @@ class create_trip : Fragment() {
     private val viewModel: CreateTripViewModel by viewModels()
     private lateinit var placesViewModel: PlacesViewModel
 
-    private lateinit var pickDateBtn: Button
+    private lateinit var pickDateBtn:  MaterialButton
     private lateinit var selectedDateTV: TextView
-    private lateinit var pickTimeBtn: Button
+    private lateinit var pickTimeBtn:  MaterialButton
     private lateinit var selectedTimeTV: TextView
-    private lateinit var createTripBtn: Button
+    private lateinit var createTripBtn:  MaterialButton
+    private lateinit var backBtn: MaterialButton
 
     private lateinit var pickupSearchView: SearchView
     private lateinit var pickupPlacesFragment: PlacesFragment
@@ -86,6 +88,7 @@ class create_trip : Fragment() {
         pickTimeBtn = binding.idBtnPickTime
         selectedTimeTV = binding.idTVSelectedTime
         createTripBtn = binding.createTripBtn
+        backBtn = binding.createTripBackBtn
 
         pickupSearchView = binding.pickupLocation
         pickupSearchView.setQueryHint("Enter pickup location");
@@ -93,6 +96,9 @@ class create_trip : Fragment() {
 
         destinationSearchView = binding.destination
         destinationSearchView.setQueryHint("Enter destination");
+        arguments?.let {
+            destinationSearchView.setQuery(create_tripArgs.fromBundle(it).toDestination, false)
+        }
         destinationSearchView.isIconified = false
 
 
@@ -206,6 +212,10 @@ class create_trip : Fragment() {
             viewModel.onCreateTrip(findNavController())
         }
         pickupSearchView.requestFocus()
+
+        backBtn.setOnClickListener {
+            findNavController().popBackStack()
+        }
     }
 
     override fun onDestroyView() {

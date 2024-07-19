@@ -27,7 +27,13 @@
         android:id="@+id/map"
         android:name="com.example.watpool.ui.maps.MapsFragment"
         android:label="Maps"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/fragment_maps" >
+        <action
+            android:id="@+id/action_map_to_fragment_create_trip"
+            app:destination="@id/fragment_create_trip"
+            app:launchSingleTop="false"
+            app:popUpToInclusive="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_welcome"
@@ -39,7 +45,16 @@
         android:id="@+id/fragment_create_trip"
         android:name="com.example.watpool.ui.create_trip.create_trip"
         android:label="@string/title_welcome"
-        tools:layout="@layout/fragment_create_trip" />
+        tools:layout="@layout/fragment_create_trip">
+    <argument
+        android:name="toDestination"
+        app:argType="string"
+        android:defaultValue="Enter destination" />
+        <action
+            android:id="@+id/action_fragment_create_trip_to_map"
+            app:destination="@id/map" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_login"
