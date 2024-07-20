@@ -63,10 +63,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // onDestroyView.
     private val binding get() = _binding!!
     // Search view for maps
-    private lateinit var searchView : SearchView
+    private lateinit var startSearchView : SearchView
+    private lateinit var destinationSearchView: SearchView
 
-    private lateinit var placesFragment: PlacesFragment
-
+    private lateinit var startPlacesFragment: PlacesFragment
+    private lateinit var destinationPlacesFragment: PlacesFragment
     // View Models
     private val mapsViewModel: MapsViewModel by viewModels()
     private lateinit var placesViewModel: PlacesViewModel
@@ -88,10 +89,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private var firebaseBound: Boolean = false
 
     // Search radius for getting postings
-    private var searchRadius : Double = 1.0
+    private var startSearchRadius : Double = 1.0
+    private var destinationSearchRadius : Double = 1.0
 
     private fun moveMapCamera(location: Location){
-        placesFragment.clearList()
+        startPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
@@ -137,12 +140,15 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val root: View = binding.root
 
         if (savedInstanceState == null) {
-            placesFragment = PlacesFragment()
+            startPlacesFragment = PlacesFragment()
+            destinationPlacesFragment = PlacesFragment()
             childFragmentManager.commit {
-                add(R.id.places_fragment_container, placesFragment)
+                add(R.id.places_fragment_start_container, startPlacesFragment)
+                add(R.id.places_fragment_destination_container, destinationPlacesFragment)
             }
         } else {
-            placesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container) as PlacesFragment
+            startPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_start_container) as PlacesFragment
+            destinationPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_destination_container) as PlacesFragment
         }
 
         placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
@@ -150,7 +156,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
-            placesFragment.clearList()
+            startPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
             drawRadius()
             userLocation?.let {
                 moveMapCamera(it)
@@ -160,7 +167,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
-            placesFragment.clearList()
+            startPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
             drawRadius()
             val cameraPosition = map?.cameraPosition?.target
             cameraPosition?.let {
@@ -174,7 +182,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val radiusSlider: Slider = binding.sliderRadius
         searchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
-            placesFragment.clearList()
+            startPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
             searchRadius = value.toDouble()
             drawRadius()
             sliderLabel.text = buildString {
@@ -185,20 +194,31 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
 
         // Top search bar binding and listener
-        searchView = binding.mapSearchView
+        startSearchView = binding.mapSearchViewStart
+        destinationSearchView = binding.mapSearchViewDestination
 
         // allow for clicking anywhere on search view to search
-        searchView.isIconified = false
+        startSearchView.isIconified = false
+        destinationSearchView.isIconified = false
 
         // TODO: clear predictions after selected item
         // Set search view to selected prediction
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
-            searchView.setQuery(prediction, true)
+            if(startSearchView.hasFocus()){
+                startSearchView.setQuery(prediction, true)
+                startPlacesFragment.clearList()
+            }
+            if(destinationSearchView.hasFocus()){
+                destinationSearchView.setQuery(prediction, true)
+                destinationPlacesFragment.clearList()
+            }
+
         })
 
-        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+        startSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                placesFragment.clearList()
+                startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
                 query?.let { locationSearch(it) }
                 return false
             }
@@ -207,10 +227,31 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 // Check if text is null otherwise get recommendations based on user search
                 if(!newText.isNullOrEmpty()) {
                     placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
-                        placesFragment.updateList(predictions)
+                        startPlacesFragment.updateList(predictions)
                     })
                 } else {
-                    placesFragment.clearList()
+                    startPlacesFragment.clearList()
+                }
+                return true
+            }
+        })
+
+        destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
+                query?.let { locationSearch(it) }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Check if text is null otherwise get recommendations based on user search
+                if(!newText.isNullOrEmpty()) {
+                    placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
+                        startPlacesFragment.updateList(predictions)
+                    })
+                } else {
+                    startPlacesFragment.clearList()
                 }
                 return true
             }
