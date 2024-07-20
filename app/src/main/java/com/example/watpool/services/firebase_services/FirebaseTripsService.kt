@@ -2,6 +2,7 @@ package com.example.watpool.services.firebase_services
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.interfaces.TripsService
 import com.firebase.geofire.GeoFireUtils
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.util.UUID
 
@@ -21,6 +23,7 @@ class FirebaseTripsService: TripsService {
     private val database = Firebase.firestore
     private val tripsRef: CollectionReference = database.collection("trips")
     private val tripsConfirmationRef: CollectionReference = database.collection("trips_confirmation")
+    private val coordinatesRef: CollectionReference = database.collection("coordinates")
 
     enum class DayOfTheWeek(val day: String) {
         SUNDAY ("SUNDAY"), MONDAY ("MONDAY"), TUESDAY ("TUESDAY"),
@@ -45,7 +48,7 @@ class FirebaseTripsService: TripsService {
 
         if (isRecurring) {
             trip["recurring_day"] = recurringDayOfTheWeek.day
-            trip["recurring_end_dat"] = recurringEndDate.toString()
+            trip["recurring_end_date"] = recurringEndDate.toString()
         }
 
         return tripsRef.add(trip)
@@ -221,31 +224,56 @@ class FirebaseTripsService: TripsService {
         return Tasks.whenAllComplete(tasks)
             .continueWith {
                 val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
+                val coordTasks: MutableList<Task<Boolean>> = ArrayList()
+
                 for (task in tasks) {
                     val snap = task.result
-                    for (doc in snap!!.documents) {
-                        val lat = doc.getDouble("latitude")!!
-                        val lng = doc.getDouble("longitude")!!
-                        val docLocation = GeoLocation(lat, lng)
-                        val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
-                        if (distanceInM <= radiusInM) {
-                            matchingDocs.add(doc)
-                        }
+                    var coordFilterName = "starting_coordinate"
+                    if (!startFilter) {
+                        coordFilterName = "ending_coordinate"
                     }
+                    for (doc in snap!!.documents) {
+                        val coordTask = coordinatesRef.document(doc.getString(coordFilterName)!!).get()
+                            .continueWith { coordSnapshotTask ->
+                                if (coordSnapshotTask.isSuccessful) {
+                                    val coordSnapshot = coordSnapshotTask.result
+                                    val tripLat = coordSnapshot?.getDouble("latitude")
+                                    val tripLng = coordSnapshot?.getDouble("longitude")
+
+                                    if (tripLat != null && tripLng != null) {
+                                        val docLocation = GeoLocation(tripLat, tripLng)
+                                        val distanceInM =
+                                            GeoFireUtils.getDistanceBetween(docLocation, center)
+                                        if (distanceInM <= radiusInM) {
+                                            matchingDocs.add(doc)
+                                        }
+                                    }
+
+                                } else {
+                                    Log.e("Trip Fetch Error", "Error getting coordinates: ", coordSnapshotTask.exception)
+                                }
+                                true
+                            }
+                            coordTasks.add(coordTask)
+
+                    }
+
                 }
 
-                matchingDocs
+                // return@continueWith
+                Tasks.whenAll(coordTasks).continueWith { _ ->
+                    Log.d(
+                        "Trip Fetch",
+                        "Returning all trips by location"
+                    )
+                    matchingDocs
+                }.result
+
             }
 
+
+
     }
-
-    // ------------------ DELETE (TODO) ------------------
-
-    // delete trip confirmation
-
-    // delete trip posting - driver side
-
-    // delete trip posting - rider side
 
 }
 

@@ -43,6 +43,9 @@
 | July 10, 2024 | 1.0  | Trips DB Service               |
 | July 14, 2024 | 0.5  | Meeting for D5                 |
 | July 15, 2024 | 1.0  | Trips DB Service - P2          |
+| July 15, 2024 | 0.5  | D5                             |
+| July 15, 2024 | 0.5  | Meeting for D6                 |
+| July 15, 2024 | 2.0  | Fetching Trips By Location     |
 
 
 | Arham         | Time | Task                                                                  |

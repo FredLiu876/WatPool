@@ -32,6 +32,10 @@ class FirebaseCoordinateService: CoordinateService {
         return coordinatesRef.whereEqualTo("id", id).get()
     }
 
+    override fun fetchCoordinatesByDocumentId(id: String): Task<DocumentSnapshot> {
+        return coordinatesRef.document(id).get()
+    }
+
     override fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinatesRef.whereEqualTo("driver_id", driverId).get()
     }
