@@ -20,6 +20,7 @@ import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.models.TripConfirmationDetails
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
@@ -169,11 +170,16 @@ class FirebaseService : Service() {
                             ).continueWith { coordTasks ->
                                 val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
                                 val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
-
+                                val startLatitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val startLongitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                val endLatitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val endLongitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
                                 document.reference.update(
                                     mapOf(
                                         "to" to startLocation,
-                                        "from" to endLocation
+                                        "from" to endLocation,
+                                        "startLatLng" to LatLng(startLatitude, startLongitude),
+                                        "endLatLng" to LatLng(endLatitude, endLongitude)
                                     )
                                 )
                                 document

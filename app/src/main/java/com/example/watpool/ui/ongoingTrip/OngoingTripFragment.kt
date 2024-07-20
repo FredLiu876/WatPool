@@ -26,7 +26,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentOngoingTripBinding
+import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.LocationService
+import com.example.watpool.services.models.Trips
 import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -44,7 +46,7 @@ import kotlin.math.max
 class OngoingTripFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var tripId: String
-    private var tripOrigin: LatLng = LatLng(43.473070, -80.532100)
+    private var tripOrigin: LatLng = LatLng(43.470630, -80.541380)
     private var tripDestination: LatLng = LatLng(43.4698361, -80.5164223)
     private var _binding: FragmentOngoingTripBinding? = null
 
@@ -83,10 +85,27 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
     private var locationService: LocationService? = null
     private var locationBound: Boolean = false
 
+    private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
+
     private fun moveMapCamera(location: Location){
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+        }
+    }
+    private fun getCoordinates(tripsId: String) {
+        val trip = firebaseService?.fetchTripsByTripsId(listOf(tripsId))
+        trip?.addOnSuccessListener { documentSnapshots ->
+            for (document in documentSnapshots) {
+                val foundTrip = document.toObject(Trips::class.java)
+                if (foundTrip != null) {
+                    tripOrigin = foundTrip.startLatLng
+                    tripDestination = foundTrip.startLatLng
+                }
+            }
+        }?.addOnFailureListener {
+            Toast.makeText(requireContext(), "Error Finding Trip", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -99,11 +118,8 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         val root: View = binding.root
 
         // Get arguments
-        arguments?.getParcelable<LatLng>("origin")?.let{
-            tripOrigin = it
-        }
-        arguments?.getParcelable<LatLng>("destination")?.let{
-            tripDestination = it
+        arguments?.getString("tripId")?.let{
+            tripId = it
         }
 
         // get views
@@ -155,6 +171,8 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         })
 
         initializeMap()
+
+        getCoordinates(tripId)
         return root
     }
 
@@ -198,6 +216,9 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
             locationBound = true
         }
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
     }
     // Stop location service if still bound
     override fun onStop() {
@@ -205,6 +226,10 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         if (locationBound) {
             requireContext().unbindService(locationConnection)
             locationBound = false
+        }
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
         }
         stopOffRouteMonitoring()
     }
@@ -214,6 +239,10 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         if (locationBound) {
             requireContext().unbindService(locationConnection)
             locationBound = false
+        }
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
         }
         stopOffRouteMonitoring()
     }
@@ -238,6 +267,18 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+            firebaseBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            firebaseBound = false
+        }
+    }
+
     // Register for location permissions result
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -245,7 +286,6 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             // Bind to LocationService, uses Bind_Auto_create to create service if it does not exist
-            // TODO: Take binding out of specific functions and make it its own private function
             val serviceIntent = Intent(requireContext(), LocationService::class.java)
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
         } else {
@@ -253,7 +293,6 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    // TODO: Possibly make permission manager so dont need to handle it all in one fragment
     // Check if location permissions are granted
     private fun arePermissionsGranted(): Boolean {
         return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -402,7 +441,7 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
     // Find route
     private fun calculateRoute(origin: LatLng, destination: LatLng) {
         mapsViewModel.fetchDirections(
-            (LatLng(origin.latitude, origin.longitude)),
+            origin,
             destination
         )
         map?.clear()
