@@ -18,7 +18,7 @@
             app:destination="@id/navigation_signup" />
         <action
             android:id="@+id/action_welcome_to_dashboard"
-            app:destination="@id/navigation_dashboard" />
+            app:destination="@id/navigation_profile" />
     </fragment>
 
     <fragment
@@ -29,9 +29,9 @@
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.example.watpool.ui.dashboard.DashboardFragment"
+        android:name="com.example.watpool.ui.create_trip.create_trip"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_create_trip" />
 
     <fragment
         android:id="@+id/map"
