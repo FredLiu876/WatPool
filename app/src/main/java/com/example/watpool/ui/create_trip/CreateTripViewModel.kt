@@ -38,6 +38,15 @@ class CreateTripViewModel : ViewModel() {
     private val _tripCreationStatus = MutableLiveData<String>()
     val tripCreationStatus: LiveData<String> get() = _tripCreationStatus
 
+    private val _isRecurring = MutableLiveData<Boolean>()
+    val isRecurring: LiveData<Boolean> get() = _isRecurring
+
+    private val _recurringDays = MutableLiveData<BooleanArray>(BooleanArray(7))
+    val recurringDays: LiveData<BooleanArray> get() = _recurringDays
+
+    private val _recurringEndDate = MutableLiveData<String>()
+    val recurringEndDate: LiveData<String> get() = _recurringEndDate
+
     fun setPickupLocation(location: String) {
         _pickupLocation.value = location
     }
@@ -56,6 +65,20 @@ class CreateTripViewModel : ViewModel() {
 
     fun setNumAvailableSeats(seats: String) {
         _numAvailableSeats.value = seats
+    }
+
+    fun setIsRecurring(isRecurring: Boolean) {
+        _isRecurring.value = isRecurring
+    }
+
+    fun setRecurringDay(dayIndex: Int, isSelected: Boolean) {
+        val currentDays = _recurringDays.value ?: BooleanArray(7)
+        currentDays[dayIndex] = isSelected
+        _recurringDays.value = currentDays
+    }
+
+    fun setRecurringEndDate(date: String) {
+        _recurringEndDate.value = date
     }
 
     fun onCreateTrip(navController: NavController) {

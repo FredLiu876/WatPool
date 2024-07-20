@@ -8,22 +8,29 @@ import android.content.Context
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.res.ColorStateList
+import android.graphics.Color
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.os.IBinder
+import android.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.databinding.FragmentCreateTripBinding
 import java.util.Calendar
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.R
@@ -46,6 +53,12 @@ class create_trip : Fragment() {
     private lateinit var pickTimeBtn: Button
     private lateinit var selectedTimeTV: TextView
     private lateinit var createTripBtn: Button
+
+    private lateinit var recurringSwitch: Switch
+    private lateinit var recurringOptionsLayout: LinearLayout
+    private lateinit var recurringEndDateBtn: Button
+    private lateinit var recurringEndDateTV: TextView
+    private val dayToggles = mutableListOf<ToggleButton>()
 
     private lateinit var pickupSearchView: SearchView
     private lateinit var pickupPlacesFragment: PlacesFragment
@@ -97,6 +110,22 @@ class create_trip : Fragment() {
         selectedTimeTV = binding.idTVSelectedTime
         createTripBtn = binding.createTripBtn
 
+        recurringSwitch = binding.recurringSwitch
+        updateRecurringSwitchUI(false)
+
+        recurringOptionsLayout = binding.recurringOptionsLayout
+        recurringEndDateBtn = binding.recurringEndDateBtn
+        recurringEndDateTV = binding.recurringEndDateTV
+        dayToggles.addAll(listOf(
+            binding.sundayToggle,
+            binding.mondayToggle,
+            binding.tuesdayToggle,
+            binding.wednesdayToggle,
+            binding.thursdayToggle,
+            binding.fridayToggle,
+            binding.saturdayToggle
+        ))
+
         pickupSearchView = binding.pickupLocation
         pickupSearchView.setQueryHint("Enter pickup location");
         pickupSearchView.isIconified = false
@@ -105,7 +134,7 @@ class create_trip : Fragment() {
         destinationSearchView.setQueryHint("Enter destination");
         destinationSearchView.isIconified = false
 
-
+        // Ensures each search view has separate queries
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
             if (pickupSearchView.hasFocus()) {
                 isSelectionInProgress = true
@@ -185,7 +214,9 @@ class create_trip : Fragment() {
             val month = c.get(Calendar.MONTH)
             val day = c.get(Calendar.DAY_OF_MONTH)
             val datePickerDialog = DatePickerDialog(
-                requireContext(),
+                ContextThemeWrapper(requireContext(), androidx.appcompat.R.style.Theme_AppCompat_Dialog).apply {
+                    theme.applyStyle(R.style.DatePickerDialogTheme, true)
+                },
                 { _, year, monthOfYear, dayOfMonth ->
                     val date = "$dayOfMonth-${monthOfYear + 1}-$year"
                     viewModel.setSelectedDate(date)
@@ -200,7 +231,9 @@ class create_trip : Fragment() {
             val hour = c.get(Calendar.HOUR_OF_DAY)
             val minute = c.get(Calendar.MINUTE)
             val timePickerDialog = TimePickerDialog(
-                requireContext(),
+                ContextThemeWrapper(requireContext(), androidx.appcompat.R.style.Theme_AppCompat_Dialog).apply {
+                    theme.applyStyle(R.style.TimePickerDialogTheme, true)
+                },
                 { _, selectedHour, selectedMinute ->
                     val time = String.format("%02d:%02d", selectedHour, selectedMinute)
                     viewModel.setSelectedTime(time)
@@ -232,7 +265,40 @@ class create_trip : Fragment() {
             }
         })
 
-        pickupSearchView.requestFocus()
+        recurringSwitch.setOnCheckedChangeListener { _, isChecked ->
+            updateRecurringSwitchUI(isChecked)
+
+            recurringOptionsLayout.visibility = if (isChecked) View.VISIBLE else View.GONE
+            viewModel.setIsRecurring(isChecked)
+        }
+
+
+        recurringEndDateBtn.setOnClickListener {
+            val c = Calendar.getInstance()
+            val year = c.get(Calendar.YEAR)
+            val month = c.get(Calendar.MONTH)
+            val day = c.get(Calendar.DAY_OF_MONTH)
+            val datePickerDialog = DatePickerDialog(
+                ContextThemeWrapper(requireContext(), androidx.appcompat.R.style.Theme_AppCompat_Dialog).apply {
+                    theme.applyStyle(R.style.DatePickerDialogTheme, true)
+                },
+                { _, year, monthOfYear, dayOfMonth ->
+                    val date = "$dayOfMonth-${monthOfYear + 1}-$year"
+                    viewModel.setRecurringEndDate(date)
+                    recurringEndDateTV.text = "End Date: $date"
+                },
+                year, month, day
+            )
+            datePickerDialog.show()
+        }
+
+        //TODO: double check logic for setRecurringDay
+        dayToggles.forEachIndexed { index, toggle ->
+            toggle.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.setRecurringDay(index, isChecked)
+            }
+        }
+
     }
 
     override fun onStart() {
@@ -268,6 +334,18 @@ class create_trip : Fragment() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             firebaseBound = false
+        }
+    }
+
+    private fun updateRecurringSwitchUI(isChecked: Boolean) {
+        val context = requireContext()
+        if (isChecked) {
+            recurringSwitch.thumbTintList = ContextCompat.getColorStateList(context, R.color.primary)
+            recurringSwitch.trackTintList = ContextCompat.getColorStateList(context, R.color.primary_variant)
+        } else {
+            // Both are shades of grey
+            recurringSwitch.thumbTintList = ColorStateList.valueOf(Color.parseColor("#AEAEAE"))
+            recurringSwitch.trackTintList = ColorStateList.valueOf(Color.parseColor("#808080"))
         }
     }
 }

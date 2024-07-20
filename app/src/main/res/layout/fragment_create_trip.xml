@@ -95,6 +95,121 @@
             android:padding="15dp"
             tools:ignore="HardcodedText" />
 
+        <Switch
+            android:id="@+id/recurringSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Make Recurring"
+            android:padding="15dp"
+            />
+
+        <LinearLayout
+            android:id="@+id/recurringOptionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="10dp">
+
+                <ToggleButton
+                    android:id="@+id/sundayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="S"
+                    android:textOff="S"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/mondayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="M"
+                    android:textOff="M"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/tuesdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="T"
+                    android:textOff="T"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/wednesdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="W"
+                    android:textOff="W"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/thursdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="T"
+                    android:textOff="T"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/fridayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="F"
+                    android:textOff="F"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/saturdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="S"
+                    android:textOff="S"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/recurringEndDateTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recurring End Date"
+                android:textAlignment="center"
+                android:padding="10dp"/>
+
+            <Button
+                android:id="@+id/recurringEndDateBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pick End Date"/>
+        </LinearLayout>
+
         <Button
             android:id="@+id/createTripBtn"
             android:layout_width="match_parent"

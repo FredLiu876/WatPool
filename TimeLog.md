@@ -48,15 +48,17 @@
 | July 15, 2024 | 2.0  | Fetching Trips By Location     |
 
 
-| Arham         | Time | Task                                                                  |
-|---------------|------|-----------------------------------------------------------------------|
-| June 05, 2024 | 0.5  | Inital Project File Creation                                          |
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                        |
-| June 20, 2024 | 4.0  | Created trip creation form                                            |
-| July 12, 2024 | 5.5  | Added search suggestions to create trip form                          |
-| July 18, 2024 | 4    | Connected create trip form to database                                |
-| July 18, 2024 | 1.5  | Get coordinates for trips from google maps API query                  |
-| July 18, 2024 | 1    | Fixed starting and ending coordinate IDs in createTrip in TripService |
+| Arham         | Time | Task                                                                          |
+|---------------|------|-------------------------------------------------------------------------------|
+| June 05, 2024 | 0.5  | Inital Project File Creation                                                  |
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                                |
+| June 20, 2024 | 4.0  | Created trip creation form                                                    |
+| July 12, 2024 | 5.5  | Added search suggestions to create trip form                                  |
+| July 18, 2024 | 4    | Connected create trip form to database                                        |
+| July 18, 2024 | 1.5  | Get coordinates for trips from google maps API query                          |
+| July 18, 2024 | 1    | Fixed starting and ending coordinate IDs in createTrip in TripService         |
+| July 20, 2024 | 1.5  | Removed notification tab and directly connected dashboard to create trip form |
+| July 20, 2024 | 2    | Added UI for recurring trips in create trips form                             |
 
 
 | Govind        | Time | Task                                                               |
