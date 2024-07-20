@@ -21,6 +21,7 @@ class FirebaseTripsService: TripsService {
     private val database = Firebase.firestore
     private val tripsRef: CollectionReference = database.collection("trips")
     private val tripsConfirmationRef: CollectionReference = database.collection("trips_confirmation")
+    private val coordinatesRef: CollectionReference = database.collection("coordinates")
 
     enum class DayOfTheWeek(val day: String) {
         SUNDAY ("SUNDAY"), MONDAY ("MONDAY"), TUESDAY ("TUESDAY"),
@@ -45,7 +46,7 @@ class FirebaseTripsService: TripsService {
 
         if (isRecurring) {
             trip["recurring_day"] = recurringDayOfTheWeek.day
-            trip["recurring_end_dat"] = recurringEndDate.toString()
+            trip["recurring_end_date"] = recurringEndDate.toString()
         }
 
         return tripsRef.add(trip)
@@ -223,13 +224,28 @@ class FirebaseTripsService: TripsService {
                 val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
                 for (task in tasks) {
                     val snap = task.result
+                    var coordFilterName: String = "starting_coordinate"
+                    if (!startFilter) {
+                        coordFilterName = "ending_coordinate"
+                    }
                     for (doc in snap!!.documents) {
-                        val lat = doc.getDouble("latitude")!!
-                        val lng = doc.getDouble("longitude")!!
-                        val docLocation = GeoLocation(lat, lng)
-                        val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
-                        if (distanceInM <= radiusInM) {
-                            matchingDocs.add(doc)
+
+                        // get the startCoordinate id
+                        val coordTask = coordinatesRef.whereEqualTo("id", doc.getString(coordFilterName)).get()
+                        val coordSnapshot = Tasks.await(coordTask)
+
+                        val tripLat = coordSnapshot?.documents?.firstOrNull()?.getDouble("latitude")
+                        val tripLng = coordSnapshot?.documents?.firstOrNull()?.getDouble("longitude")
+
+
+                        if (tripLat != null && tripLng != null) {
+                            val docLocation = GeoLocation(tripLat, tripLng)
+                            val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
+                            if (distanceInM <= radiusInM) {
+                                doc.data?.put("latitude", tripLat)
+                                doc.data?.put("longitude", tripLng)
+                                matchingDocs.add(doc)
+                            }
                         }
                     }
                 }
@@ -238,14 +254,6 @@ class FirebaseTripsService: TripsService {
             }
 
     }
-
-    // ------------------ DELETE (TODO) ------------------
-
-    // delete trip confirmation
-
-    // delete trip posting - driver side
-
-    // delete trip posting - rider side
 
 }
 
