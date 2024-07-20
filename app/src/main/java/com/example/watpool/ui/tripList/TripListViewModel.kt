@@ -1,5 +1,6 @@
 package com.example.watpool.ui.tripList
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.TripConfirmationDetails
 import com.example.watpool.services.models.Trip
-import com.example.watpool.services.models.toTrip
 import kotlinx.coroutines.launch
 
 class TripListViewModel : ViewModel() {
@@ -20,21 +20,8 @@ class TripListViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val tripsList = firebaseService.fetchAllConfirmedTripsByRiderId(riderId)
+                Log.e("Posting View Model", "Is broke 2" + tripsList.get(0).id)
                 _trips.value = tripsList
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun fetchTripsByLocation(firebaseService: FirebaseService, latitude: Double, longitude: Double, radiusInKm: Double, startFilter: Boolean){
-        viewModelScope.launch {
-            try {
-                val dbTripList = firebaseService.fetchTripsByLocation(latitude, longitude, radiusInKm, startFilter)
-                dbTripList.addOnSuccessListener { documentSnapshots ->
-                    val tripList = documentSnapshots.map { it.toTrip() }
-                    _tripsInLocation.value = tripList
-                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

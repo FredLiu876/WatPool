@@ -4,17 +4,22 @@ import com.google.firebase.firestore.DocumentSnapshot
 import java.util.Date
 
 data class Trip(
-    val driverId: String = "",
-    val endingCoordinate: String = "",
-    val from: String = "",
-    val id: String = "",
-    val isRecurring: Boolean = false,
-    val passengers: List<String> = emptyList(),
-    val startingCoordinate: String = "",
-    val to: String = "",
-    val tripDate: Date? = null
+    val id: String,
+    val driverId: String,
+    val endGeohash: String,
+    val endingCoordinate: String,
+    val from: String,
+    val isRecurring: Boolean,
+    val maxPassengers: Int,
+    val startGeohash: String,
+    val startingCoordinate: String,
+    val to: String,
+    val tripDate: String,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
+/*
  fun DocumentSnapshot.toTrip(): Trip {
     return Trip(
         driverId = getString("driver_id") ?: "",
@@ -27,4 +32,4 @@ data class Trip(
         to = getString("to") ?: "",
         tripDate = getTimestamp("trip_date")?.toDate()
     )
-}
+}*/

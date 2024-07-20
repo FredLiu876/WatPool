@@ -31,7 +31,7 @@ import java.time.LocalDate
 import java.util.Calendar
 import java.util.Locale
 
-class TripListFragment :  BottomSheetDialogFragment() {
+class TripListFragment :  Fragment() {
 
     private lateinit var todayTripAdapter: TripAdapter
     private lateinit var upcomingTripAdapter: TripAdapter
@@ -63,7 +63,6 @@ class TripListFragment :  BottomSheetDialogFragment() {
         todayTripAdapter = TripAdapter(emptyList()) { trip ->
             val action = TripListFragmentDirections.actionTripListFragmentToIsCurrentTripFragment(trip.id)
             findNavController().navigate(action)
-
         }
         upcomingTripAdapter = TripAdapter(emptyList()) { trip ->
             val action = TripListFragmentDirections.actionTripListFragmentToIsCurrentTripFragment(trip.id)

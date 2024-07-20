@@ -20,6 +20,8 @@ firebaseDatabase = "21.0.0"
 playServicesLocation = "21.3.0"
 firebaseFirestoreKtx = "25.0.0"
 places = "3.5.0"
+legacySupportV4 = "1.0.0"
+recyclerview = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +40,8 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 places = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
+androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 
 [plugins]
 android-navigation-safe-args = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }

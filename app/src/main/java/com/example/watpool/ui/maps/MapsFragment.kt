@@ -35,6 +35,9 @@ import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
+import com.example.watpool.services.models.Trip
+
+import com.example.watpool.ui.postingList.PostingListFragment
 import com.example.watpool.ui.tripList.TripListFragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -46,6 +49,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import java.io.IOException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 
@@ -61,6 +66,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var placesFragment: PlacesFragment
     private lateinit var tripListFragment: TripListFragment
+    private lateinit var postingListFragment: PostingListFragment
 
     // View Models
     private val mapsViewModel: MapsViewModel by viewModels()
@@ -94,9 +100,41 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
-        searchView.clearFocus()
-        tripListFragment.show(childFragmentManager, "TripListBottomSheet")
+       // searchView.clearFocus()
+       // tripListFragment.show(childFragmentManager, "TripListBottomSheet")
+        firebaseService?.let {
+           /* val dateFormatter = DateTimeFormatter.ofPattern("d-M-yyyy")
+            it.createTrip("driver_id_1", locationLatLng.latitude, locationLatLng.longitude, locationLatLng.latitude, locationLatLng.longitude,"Waterloo"
+            ,"Waterloo",LocalDate.parse("2024-07-18", dateFormatter),"3", false)
+*/
+            searchView.clearFocus()
 
+            val dbTripList = it.fetchTripsByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, true)
+            dbTripList.addOnSuccessListener { documentSnapshots ->
+
+                }
+            }.addOnFailureListener {
+
+            }
+              /*  val dbTripList = it.fetchTripsByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, true)
+                dbTripList.addOnSuccessListener { documentSnapshots ->
+                    //val tripList = documentSnapshots.map { it.toTrip() }
+                    //Log.e("Posting View Model", "Is broke 2" + documentSnapshots.first().getString("driver_id"))
+
+                    for (doc in documentSnapshots){
+                       // val tripTest = doc.toObject(Trip::class.java)
+                        Log.e("Posting View Model", "Is broke 2" + doc.getString("id"))
+                    }
+                }.addOnFailureListener {
+
+                }*/
+
+            /*postingListFragment = PostingListFragment.newInstance(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, true)
+            if (postingListFragment.isRemoving){
+                searchView.clearFocus()
+            }
+            postingListFragment.show(childFragmentManager, "PostingListBottomSheet")*/
+        }
 
 
         /*val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
@@ -131,10 +169,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
 
         placesViewModel = ViewModelProvider(requireActivity())[PlacesViewModel::class.java]
-        tripListFragment = TripListFragment()
-        if (tripListFragment.isRemoving){
-            searchView.clearFocus()
-        }
+
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
@@ -246,8 +281,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
             googleMap.setOnCameraIdleListener {
                 drawRadius()
+                /*val cameraPosition = map?.cameraPosition?.target
+                cameraPosition?.let {
+                    val latLng = LatLng(it.latitude, it.longitude)
+                    showPostingsInRadius(latLng, searchRadius)
+                }*/
             }
-
         }
     }
 

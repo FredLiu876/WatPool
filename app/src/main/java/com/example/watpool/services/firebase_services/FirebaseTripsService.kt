@@ -2,6 +2,7 @@ package com.example.watpool.services.firebase_services
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.interfaces.TripsService
 import com.firebase.geofire.GeoFireUtils
@@ -198,6 +199,41 @@ class FirebaseTripsService: TripsService {
         return tripUpdate(tripId, tripUpdate)
     }
 
+   /* override fun fetchTripsByLocation(
+        latitude: Double,
+        longitude: Double,
+        radiusInKm: Double,
+        startFilter: Boolean
+    ): Task<MutableList<DocumentSnapshot>> {
+        val center = GeoLocation(latitude, longitude)
+        val radiusInM = radiusInKm * 1000
+        val bounds = GeoFireUtils.getGeoHashQueryBounds(center, radiusInM)
+        val tasks: MutableList<Task<QuerySnapshot>> = ArrayList()
+        val filterName = if (startFilter) "start_geohash" else "end_geohash"
+
+        for (b in bounds) {
+            val q = tripsRef
+                .orderBy(filterName)
+                .startAt(b.startHash)
+                .endAt(b.endHash)
+            tasks.add(q.get())
+        }
+
+        return Tasks.whenAllComplete(tasks).continueWith { task ->
+            val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
+            if (task.isSuccessful) {
+                for (res in tasks) {
+                    val snap = res.result
+                    if (snap != null) {
+                        Log.e("TripService", "Snap " + snap.documents.size)
+                        matchingDocs.addAll(snap.documents)
+                    }
+                }
+            }
+            matchingDocs
+        }
+    }*/
+
     override fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, startFilter: Boolean): Task<MutableList<DocumentSnapshot>> {
         // Find the bounding box for quick filtering
         val center = GeoLocation(latitude, longitude)
@@ -205,7 +241,7 @@ class FirebaseTripsService: TripsService {
 
         val bounds = GeoFireUtils.getGeoHashQueryBounds(center, radiusInM)
         val tasks: MutableList<Task<QuerySnapshot>> = ArrayList()
-
+        Log.e("fetchTripsByLocation", "Start " + latitude)
         var filterName: String = "start_geohash"
         if (!startFilter) {
             filterName = "end_geohash"
@@ -221,19 +257,24 @@ class FirebaseTripsService: TripsService {
         return Tasks.whenAllComplete(tasks)
             .continueWith {
                 val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
+                val coordinatesTasks: MutableList<Task<QuerySnapshot>> = ArrayList()
+                Log.e("fetchTripsByLocation", "Location: Return")
                 for (task in tasks) {
+                    Log.e("fetchTripsByLocation", "Location: Task")
                     val snap = task.result
                     for (doc in snap!!.documents) {
+                        Log.e("fetchTripsByLocation", "Location: GEtg brok")
                         val lat = doc.getDouble("latitude")!!
                         val lng = doc.getDouble("longitude")!!
+
                         val docLocation = GeoLocation(lat, lng)
+                        Log.e("fetchTripsByLocation", "Location: "+ lat)
                         val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
                         if (distanceInM <= radiusInM) {
                             matchingDocs.add(doc)
                         }
                     }
                 }
-
                 matchingDocs
             }
 
