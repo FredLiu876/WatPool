@@ -33,7 +33,7 @@ import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
-import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
+import com.example.watpool.services.models.Trips
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -75,7 +75,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
-    private var findingRoute = false
 
     // Stored locations
     private var userLocation: Location? = null
@@ -99,7 +98,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
-        val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
+        val postings = firebaseService?.fetchTripsByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, true)
+        postings?.addOnSuccessListener {
+            for (document in it) {
+                Log.e("MapsTeswt", "showpostings broken")
+                val dataModel = document.toObject(Trips::class.java)
+                if (dataModel != null) {
+                    Log.e("MapsTeswt", dataModel.driverId)
+                }
+            }
+        }?.addOnFailureListener {
+            Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
+        }
+
+        /*val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
         postings?.addOnSuccessListener { documentSnapshot ->
             for (document in documentSnapshot) {
                 val dataModel = document.toObject(Coordinate::class.java)
@@ -110,7 +122,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         }?.addOnFailureListener {
             Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
-        }
+        }*/
+
+
     }
 
 
@@ -133,17 +147,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
 
-        // Bottom of map safety sheet bindings and listener
-        val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
-        buttonOpenBottomSheet.setOnClickListener {
-            val bottomSheet = SafetyBottomSheetDialog()
-            bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
-        }
-
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
-            findingRoute = false
             placesFragment.clearList()
             drawRadius()
             userLocation?.let {
@@ -154,7 +160,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
-            findingRoute = false
             placesFragment.clearList()
             drawRadius()
             val cameraPosition = map?.cameraPosition?.target
@@ -169,7 +174,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val radiusSlider: Slider = binding.sliderRadius
         searchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
-            findingRoute = false
             placesFragment.clearList()
             searchRadius = value.toDouble()
             drawRadius()
@@ -194,14 +198,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                findingRoute = false
                 placesFragment.clearList()
                 query?.let { locationSearch(it) }
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                findingRoute = false
                 // Check if text is null otherwise get recommendations based on user search
                 if(!newText.isNullOrEmpty()) {
                     placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
@@ -211,35 +213,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                     placesFragment.clearList()
                 }
                 return true
-            }
-        })
-
-
-        val buttonFindRoute: MaterialButton = binding.findRoute
-        buttonFindRoute.setOnClickListener {
-            findingRoute = true
-            // Fetch and draw the route once the map is ready
-            val origin =  map?.cameraPosition?.target// Example origin
-            val destination = LatLng(43.4698361, -80.5164223) // Example destination
-            origin?.let {
-                val originLatLng = LatLng(origin.latitude, origin.longitude)
-                mapsViewModel.fetchDirections(
-                    (LatLng(origin.latitude, origin.longitude)),
-                    destination
-                )
-                map?.clear()
-                map?.addMarker(MarkerOptions().position(originLatLng))
-            }
-            map?.addMarker(MarkerOptions().position(destination))
-            map?.let { googleMap ->
-                val latLng = LatLng(destination.latitude, destination.longitude)
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-            }
-        }
-
-        mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
-            directions?.let {
-                drawRoute(it)
             }
         })
 
@@ -280,9 +253,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
             googleMap.setOnCameraIdleListener {
-                if(!findingRoute){
                     drawRadius()
-                }
             }
         }
     }
@@ -412,39 +383,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-    private fun drawRoute(directions: String) {
-        try {
-            val jsonObject = JSONObject(directions)
-            val routes = jsonObject.getJSONArray("routes")
-            val points = ArrayList<LatLng>()
-            val polylineOptions = PolylineOptions()
-
-            for (i in 0 until routes.length()) {
-                val route = routes.getJSONObject(i)
-                val legs = route.getJSONArray("legs")
-
-                for (j in 0 until legs.length()) {
-                    val leg = legs.getJSONObject(j)
-                    val steps = leg.getJSONArray("steps")
-
-                    for (k in 0 until steps.length()) {
-                        val step = steps.getJSONObject(k)
-                        val point = step.getJSONObject("start_location")
-                        val lat: Double = point.getDouble("lat")
-                        val lng: Double = point.getDouble("lng")
-                        val position = LatLng(lat, lng)
-                        points.add(position)
-                    }
-                }
-            }
-            polylineOptions.addAll(points)
-            polylineOptions.width(12f)
-            polylineOptions.geodesic(true)
-            map?.addPolyline(polylineOptions)
-        } catch (e: Exception) {
-            Log.e("Draw route Exception", e.toString())
         }
     }
 }
