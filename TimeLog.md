@@ -9,14 +9,16 @@
 | June 20, 2024 | 3    | Added Radius Search and updated map    |
 | June 20, 2024 | 0.5  | Integrated radius search with db       |
 
-| James         | Time | Task                                    |
-|---------------|------|-----------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback          |
-| June 10, 2024 | 2    | Added current trip status bar layout    |
-| June 20, 2024 | 3    | Added safety features bottom sheet      |
-| June 22, 2024 | 5    | Added direction finding from two points |
-| July 13, 2024 | 2    | Improve route drawing accuracy          |
-| July 15, 2024 | 3    | Add off-route detection                 |
+| James         | Time | Task                                       |
+|---------------|------|--------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback             |
+| June 10, 2024 | 2    | Added current trip status bar layout       |
+| June 20, 2024 | 3    | Added safety features bottom sheet         |
+| June 22, 2024 | 5    | Added direction finding from two points    |
+| July 13, 2024 | 2    | Improve route drawing accuracy             |
+| July 15, 2024 | 3    | Add off-route detection                    |
+| July 18, 2024 | 5    | Change theme and refactor start trip       |
+| July 19, 2024 | 5    | Use trip id to find start and end location |
 
 | Fred          | Time | Task                                                                                           |
 |---------------|------|------------------------------------------------------------------------------------------------|
@@ -26,6 +28,7 @@
 | June 23, 2024 | 1    | Connected trip list to trip safety features                                                    |
 | July 14, 2024 | 5    | Connected database to trip list with a query joining trip confirmations, trips and user tables |
 | July 15, 2024 | 3    | Debugged issues with database queries                                                          |
+| July 18, 2024 | 3    | Break trip list into three dropdown lists                                                      |
 
 | Sriram        | Time | Task                           |
 |---------------|------|--------------------------------|
@@ -40,13 +43,20 @@
 | July 10, 2024 | 1.0  | Trips DB Service               |
 | July 14, 2024 | 0.5  | Meeting for D5                 |
 | July 15, 2024 | 1.0  | Trips DB Service - P2          |
+| July 15, 2024 | 0.5  | D5                             |
+| July 15, 2024 | 0.5  | Meeting for D6                 |
+| July 15, 2024 | 2.0  | Fetching Trips By Location     |
 
 
-| Arham         | Time | Task                           |
-|---------------|------|--------------------------------|
-| June 05, 2024 | 0.5  | Inital Project File Creation   |
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback |
-| June 20, 2024 | 4    | Created trip creation form     |
+| Arham         | Time | Task                                                                  |
+|---------------|------|-----------------------------------------------------------------------|
+| June 05, 2024 | 0.5  | Inital Project File Creation                                          |
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                        |
+| June 20, 2024 | 4.0  | Created trip creation form                                            |
+| July 12, 2024 | 5.5  | Added search suggestions to create trip form                          |
+| July 18, 2024 | 4    | Connected create trip form to database                                |
+| July 18, 2024 | 1.5  | Get coordinates for trips from google maps API query                  |
+| July 18, 2024 | 1    | Fixed starting and ending coordinate IDs in createTrip in TripService |
 
 
 | Govind        | Time | Task                                                               |

@@ -20,6 +20,7 @@ import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.models.TripConfirmationDetails
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
@@ -76,6 +77,16 @@ class FirebaseService : Service() {
         return authService.currentUser()
     }
 
+    fun fetchUserByDocumentId(id: String): Task<DocumentSnapshot> {
+        return userService.fetchUserByDocumentId(id)
+    }
+
+
+    fun fetchCoordinatesByDocumentId(id: String): Task<DocumentSnapshot> {
+        return coordinateService.fetchCoordinatesByDocumentId(id)
+    }
+
+
     fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }
@@ -108,8 +119,8 @@ class FirebaseService : Service() {
             coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
         ).continueWith { tasks ->
             if (tasks.isSuccessful) {
-                val startingCoordinateId = (tasks.result[0].result as? DocumentSnapshot)?.getString("id") ?: ""
-                val endingCoordinateId = (tasks.result[1].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val startingCoordinateId = (tasks.result[0].result as? DocumentReference)?.id ?: ""
+                val endingCoordinateId = (tasks.result[1].result as? DocumentReference)?.id ?: ""
                 val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
                 val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
                 tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
@@ -169,11 +180,16 @@ class FirebaseService : Service() {
                             ).continueWith { coordTasks ->
                                 val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
                                 val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
-
+                                val startLatitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val startLongitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                val endLatitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val endLongitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
                                 document.reference.update(
                                     mapOf(
                                         "to" to startLocation,
-                                        "from" to endLocation
+                                        "from" to endLocation,
+                                        "startLatLng" to LatLng(startLatitude, startLongitude),
+                                        "endLatLng" to LatLng(endLatitude, endLongitude)
                                     )
                                 )
                                 document

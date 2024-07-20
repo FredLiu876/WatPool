@@ -10,8 +10,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 interface TripsService {
-    // fun cloneTrip(tripId: String): Task<DocumentReference>
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<DocumentReference>
     @RequiresApi(Build.VERSION_CODES.O)

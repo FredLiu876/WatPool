@@ -4,14 +4,20 @@ import PlacesFragment
 import PlacesViewModel
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.os.IBinder
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -21,6 +27,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.R
+import com.example.watpool.services.FirebaseService
 
 class create_trip : Fragment() {
 
@@ -45,6 +52,9 @@ class create_trip : Fragment() {
     private lateinit var destinationSearchView: SearchView
     private lateinit var destinationPlacesFragment: PlacesFragment
     private var isSelectionInProgress = false
+
+    private var firebaseService: FirebaseService? = null
+    private var firebaseBound: Boolean = false
 
 
 
@@ -202,14 +212,62 @@ class create_trip : Fragment() {
 
         createTripBtn.setOnClickListener {
             viewModel.setNumAvailableSeats(binding.numAvailableSeats.text.toString())
-            viewModel.saveTrip()
-            viewModel.onCreateTrip(findNavController())
+            firebaseService?.let { service ->
+                viewModel.saveTrip(service)
+            } ?: run {
+                Toast.makeText(context, "Firebase service not available", Toast.LENGTH_SHORT).show()
+            }
         }
+
+        viewModel.tripCreationStatus.observe(viewLifecycleOwner, Observer { status ->
+            Toast.makeText(context, status, Toast.LENGTH_LONG).show()
+            if (status.startsWith("Trip created successfully")) {
+                viewModel.onCreateTrip(findNavController())
+            }
+
+            // for debugging saveTrip
+            firebaseService?.let { service ->
+                viewModel.fetchTripsForCurrentUser(service)
+                viewModel.fetchAllCoordinatesForCurrentUser(service)
+            }
+        })
+
         pickupSearchView.requestFocus()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
+        requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
+        firebaseBound = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (firebaseBound){
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        if (firebaseBound) {
+            requireContext().unbindService(firebaseConnection)
+            firebaseBound = false
+        }
         _binding = null
+    }
+
+    private val firebaseConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as FirebaseService.FirebaseBinder
+            firebaseService = binder.getService()
+            firebaseBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            firebaseBound = false
+        }
     }
 }
