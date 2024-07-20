@@ -153,7 +153,7 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             } else {
                 AlertDialog.Builder(requireContext())
                     .setTitle("Warning")
-                    .setMessage("You are not within $offRouteThreshold meters of the start location. Please move closer to the start location.")
+                    .setMessage("You are not within $offRouteThreshold meters of trip start location. Please move closer to the start location shown on map.")
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
             }
@@ -202,6 +202,10 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             }
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
+            // add trip origin marker
+            map?.addMarker(MarkerOptions().position(tripOrigin))
+            // add destination marker
+            map?.addMarker(MarkerOptions().position(tripDestination))
         }
     }
     override fun onMapReady(p0: GoogleMap) {
@@ -446,6 +450,8 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         )
         map?.clear()
 
+        // add trip origin marker
+        map?.addMarker(MarkerOptions().position(tripOrigin))
         // add destination marker
         map?.addMarker(MarkerOptions().position(destination))
     }

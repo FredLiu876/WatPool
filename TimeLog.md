@@ -9,15 +9,16 @@
 | June 20, 2024 | 3    | Added Radius Search and updated map    |
 | June 20, 2024 | 0.5  | Integrated radius search with db       |
 
-| James         | Time | Task                                    |
-|---------------|------|-----------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback          |
-| June 10, 2024 | 2    | Added current trip status bar layout    |
-| June 20, 2024 | 3    | Added safety features bottom sheet      |
-| June 22, 2024 | 5    | Added direction finding from two points |
-| July 13, 2024 | 2    | Improve route drawing accuracy          |
-| July 15, 2024 | 3    | Add off-route detection                 |
-| July 18, 2024 | 5    | Change theme and refactor start trip    |
+| James         | Time | Task                                       |
+|---------------|------|--------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback             |
+| June 10, 2024 | 2    | Added current trip status bar layout       |
+| June 20, 2024 | 3    | Added safety features bottom sheet         |
+| June 22, 2024 | 5    | Added direction finding from two points    |
+| July 13, 2024 | 2    | Improve route drawing accuracy             |
+| July 15, 2024 | 3    | Add off-route detection                    |
+| July 18, 2024 | 5    | Change theme and refactor start trip       |
+| July 19, 2024 | 5    | Use trip id to find start and end location |
 
 | Fred          | Time | Task                                                                                           |
 |---------------|------|------------------------------------------------------------------------------------------------|
