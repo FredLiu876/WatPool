@@ -1,9 +1,9 @@
 {
   "project_info": {
     "project_number": "134067572010",
+    "firebase_url": "https://watpool-default-rtdb.firebaseio.com",
     "project_id": "watpool",
-    "storage_bucket": "watpool.appspot.com",
-    "firebase_url": "https://watpool-default-rtdb.firebaseio.com/"
+    "storage_bucket": "watpool.appspot.com"
   },
   "client": [
     {

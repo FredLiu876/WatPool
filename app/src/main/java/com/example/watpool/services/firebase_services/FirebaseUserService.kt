@@ -20,22 +20,21 @@ class FirebaseUserService: UserService {
     override fun fetchUsersById(id: String): Task<QuerySnapshot> {
         return usersRef.whereEqualTo("id", id).get()
     }
-    override fun fetchUsersByUsername(username: String): Task<QuerySnapshot> {
-        return usersRef.whereEqualTo("username", username).get()
+    override fun fetchUsersByUsername(email: String): Task<QuerySnapshot> {
+        return usersRef.whereEqualTo("email", email).get()
     }
 
-    override fun createUser(username: String, name: String, phone: String): Task<DocumentReference> {
+    override fun createUser(email: String, name: String): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val user = hashMapOf(
             "id" to id,
-            "username" to username,
+            "email" to email,
             "name" to name,
-            "phone" to phone,
+            "phone" to 1234567890,
             "rating_as_rider" to 5,
             "rating_as_driver" to 5,
             "is_driver" to false,
         )
-
         return usersRef.add(user)
     }
 

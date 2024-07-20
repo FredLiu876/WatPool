@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -24,9 +24,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/lets_login"
+        android:text="@string/join_today"
         android:textSize="20sp"
         android:layout_marginBottom="24dp" />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="Name"
+        android:hint="@string/name"
+        android:inputType="textPersonName"/>
 
     <EditText
         android:id="@+id/email"
@@ -34,9 +42,7 @@
         android:layout_height="wrap_content"
         android:autofillHints="Email"
         android:hint="@string/email"
-        android:inputType="textEmailAddress"
-        android:padding="12dp"
-        android:layout_marginBottom="8dp" />
+        android:inputType="textEmailAddress"/>
 
     <EditText
         android:id="@+id/password"
@@ -44,14 +50,11 @@
         android:layout_height="wrap_content"
         android:autofillHints="Password"
         android:hint="@string/password"
-        android:padding="12dp"
-        android:inputType="textPassword"
-        android:layout_marginBottom="8dp" />
+        android:inputType="textPassword"/>
 
     <Button
-        android:id="@+id/buttonLogin"
-        android:layout_width="wrap_content"
+        android:id="@+id/signupButton"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login"
-        android:elevation="4dp"/>
+        android:text="@string/sign_up"/>
 </LinearLayout>

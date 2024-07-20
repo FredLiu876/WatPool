@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.firebase_services.FirebaseAuthService
 import com.example.watpool.services.firebase_services.FirebaseCoordinateService
@@ -16,6 +17,7 @@ import com.example.watpool.services.interfaces.DriverService
 import com.example.watpool.services.interfaces.TripsService
 import com.example.watpool.services.interfaces.UserService
 import com.example.watpool.services.models.Coordinate
+import com.example.watpool.services.models.TripConfirmationDetails
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.firebase.Firebase
@@ -23,11 +25,15 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.database.database
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.Timestamp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.util.Locale
 
 
 // TODO: Add helper functions here to interact with the DB
@@ -66,6 +72,10 @@ class FirebaseService : Service() {
         return authService.signUp(email, password)
     }
 
+    fun currentUser(): String {
+        return authService.currentUser()
+    }
+
     fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }
@@ -81,11 +91,11 @@ class FirebaseService : Service() {
     fun fetchUsersById(id: String): Task<QuerySnapshot> {
         return userService.fetchUsersById(id)
     }
-    fun fetchUsersByUsername(username: String) : Task<QuerySnapshot> {
-        return userService.fetchUsersByUsername(username)
+    fun fetchUsersByUsername(email: String) : Task<QuerySnapshot> {
+        return userService.fetchUsersByUsername(email)
     }
-    fun createUser(username: String, name: String, phone: String) : Task<DocumentReference> {
-        return userService.createUser(username, name, phone)
+    fun createUser(email: String, name: String) : Task<DocumentReference> {
+        return userService.createUser(email, name)
     }
     fun createDriver(username: String, licenseNumber: String, carModel: String, carColor: String ) : Task<Void> {
         return userService.createDriver(username, licenseNumber, carModel, carColor)
@@ -98,8 +108,8 @@ class FirebaseService : Service() {
             coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
         ).continueWith { tasks ->
             if (tasks.isSuccessful) {
-                val startingCoordinateId = (tasks.result[0].result as? DocumentSnapshot)?.getString("id") ?: ""
-                val endingCoordinateId = (tasks.result[1].result as? DocumentSnapshot)?.getString("id") ?: ""
+                val startingCoordinateId = (tasks.result[0].result as? DocumentReference)?.id ?: ""
+                val endingCoordinateId = (tasks.result[1].result as? DocumentReference)?.id ?: ""
                 val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
                 val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
                 tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
@@ -157,8 +167,8 @@ class FirebaseService : Service() {
                                 coordinateService.fetchCoordinatesById(startCoordinateId),
                                 coordinateService.fetchCoordinatesById(endCoordinateId)
                             ).continueWith { coordTasks ->
-                                val startLocation = (coordTasks.result[0].result as? DocumentSnapshot)?.getString("location") ?: ""
-                                val endLocation = (coordTasks.result[1].result as? DocumentSnapshot)?.getString("location") ?: ""
+                                val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
+                                val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
 
                                 document.reference.update(
                                     mapOf(
@@ -178,6 +188,10 @@ class FirebaseService : Service() {
                     Tasks.forException(task.exception ?: Exception("Unknown error"))
                 }
             }
+    }
+
+    fun fetchTripsByTripsId(tripIds: List<String>): Task<List<DocumentSnapshot>> {
+        return tripsCoordinateConnector(tripsService.fetchTripsByTripIds(tripIds))
     }
 
     fun fetchTripsByDriverId(driverId: String): Task<List<DocumentSnapshot>> {
@@ -219,6 +233,38 @@ class FirebaseService : Service() {
         return tripsService.makeTripNonRecurring(tripId)
     }
 
+    suspend fun fetchAllConfirmedTripsByRiderId(riderId: String): List<TripConfirmationDetails> {
+        val tripConfirmations = tripsService.fetchTripConfirmationByRiderId(riderId).await()
+        val tripIds = tripConfirmations.documents.mapNotNull { it.getString("tripId") }
+        val tripDetails = tripsCoordinateConnector(tripsService.fetchTripsByTripIds(tripIds)).await()
+
+
+        val fetchedTrips = tripDetails.mapNotNull { document ->
+            val tripDateFormatted = document.getTimestamp("trip_date")?.toDate()
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            Log.d("TripDocument", "ID: ${document.getString("id")}, To: ${document.getString("to")}, From: ${document.getString("from")}, Trip Date: $tripDateFormatted, Driver ID: ${document.getString("driver_id")}")
+            val documentData = document.data
+            Log.d("TripDocument", documentData.toString())
+
+            tripDateFormatted?.let {
+                TripConfirmationDetails(
+                    id = document.getString("id") ?: "",
+                    to = document.getString("to") ?: "",
+                    from = document.getString("from") ?: "",
+                    tripDate = format.format(tripDateFormatted),
+                    driverId = document.getString("driver_id") ?: "",
+                    driver = ""
+                )
+            }
+        }
+        val fullTripDetails = fetchedTrips.map { trip ->
+            val driverName = userService.fetchUsersById(trip.driverId).await().documents.mapNotNull { it.getString("name") } [0]
+            trip.copy(driver = driverName ?: "Unknown")
+        }
+        return fullTripDetails
+    }
+      
     // Specify a location and a range to get trips starting / ending within that range
     // fetches by start filter by default, set to false to fetch by end coordinates
     fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, fetchByStart: Boolean = true): Task<MutableList<DocumentSnapshot>> {
