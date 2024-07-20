@@ -14,7 +14,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
-        android:background="#0099FF"
         tools:context=".ui.profile.ProfileFragment">
 
         <TextView
@@ -25,7 +24,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:textSize="48sp"
-            android:textColor="@color/white"
+            android:textColor="@color/black"
             android:layout_marginTop="36dp"
             android:textStyle="bold"
             android:layout_weight="1"/>

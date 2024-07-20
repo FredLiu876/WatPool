@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="#0099FF"
     android:padding="16dp">
 
     <TextView
@@ -13,7 +12,6 @@
         android:layout_height="wrap_content"
         android:text="@string/welcome_to_watpool"
         android:textSize="24sp"
-        android:textColor="@android:color/white"
         android:fontFamily="sans-serif-medium"
         android:layout_marginBottom="16dp" />
 
