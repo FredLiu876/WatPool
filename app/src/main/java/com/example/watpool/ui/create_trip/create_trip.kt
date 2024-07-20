@@ -35,6 +35,8 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.example.watpool.R
 import com.example.watpool.services.FirebaseService
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class create_trip : Fragment() {
 
@@ -220,6 +222,7 @@ class create_trip : Fragment() {
                 { _, year, monthOfYear, dayOfMonth ->
                     val date = "$dayOfMonth-${monthOfYear + 1}-$year"
                     viewModel.setSelectedDate(date)
+                    selectedDateTV.text = "Date: $date"
                 },
                 year, month, day
             )
@@ -235,10 +238,11 @@ class create_trip : Fragment() {
                     theme.applyStyle(R.style.TimePickerDialogTheme, true)
                 },
                 { _, selectedHour, selectedMinute ->
-                    val time = String.format("%02d:%02d", selectedHour, selectedMinute)
+                    val time = SimpleDateFormat("h:mm a", Locale.getDefault()).format(c.time)
                     viewModel.setSelectedTime(time)
+                    selectedTimeTV.text = "Time: $time"
                 },
-                hour, minute, true
+                hour, minute, false
             )
             timePickerDialog.show()
         }
@@ -292,7 +296,6 @@ class create_trip : Fragment() {
             datePickerDialog.show()
         }
 
-        //TODO: double check logic for setRecurringDay
         dayToggles.forEachIndexed { index, toggle ->
             toggle.setOnCheckedChangeListener { _, isChecked ->
                 viewModel.setRecurringDay(index, isChecked)

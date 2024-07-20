@@ -52,7 +52,7 @@
             android:text="Date"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
@@ -73,7 +73,7 @@
             android:text="Time"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
@@ -85,22 +85,14 @@
             android:textAllCaps="false"
             tools:ignore="HardcodedText" />
 
-        <EditText
-            android:id="@+id/numAvailableSeats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints=""
-            android:hint="Enter # of available seats"
-            android:inputType="text"
-            android:padding="15dp"
-            tools:ignore="HardcodedText" />
-
         <Switch
             android:id="@+id/recurringSwitch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Make Recurring"
-            android:padding="15dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:padding="10dp"
             />
 
         <LinearLayout
@@ -201,6 +193,9 @@
                 android:layout_height="wrap_content"
                 android:text="Recurring End Date"
                 android:textAlignment="center"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
                 android:padding="10dp"/>
 
             <Button
@@ -210,11 +205,21 @@
                 android:text="Pick End Date"/>
         </LinearLayout>
 
+        <EditText
+            android:id="@+id/numAvailableSeats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="Enter # of available seats"
+            android:inputType="text"
+            android:padding="15dp"
+            tools:ignore="HardcodedText" />
+
         <Button
             android:id="@+id/createTripBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             android:text="Create Trip"
             tools:ignore="HardcodedText" />
 

@@ -1,5 +1,6 @@
 package com.example.watpool.ui.create_trip
 
+import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,6 +9,7 @@ import androidx.navigation.NavController
 import com.example.watpool.BuildConfig
 import com.example.watpool.R
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.watpool.services.FirebaseService
 import java.time.LocalDate
 import kotlinx.coroutines.launch
@@ -41,7 +43,7 @@ class CreateTripViewModel : ViewModel() {
     private val _isRecurring = MutableLiveData<Boolean>()
     val isRecurring: LiveData<Boolean> get() = _isRecurring
 
-    private val _recurringDays = MutableLiveData<BooleanArray>(BooleanArray(7))
+    private val _recurringDays = MutableLiveData<BooleanArray>(BooleanArray(7) {false})
     val recurringDays: LiveData<BooleanArray> get() = _recurringDays
 
     private val _recurringEndDate = MutableLiveData<String>()
@@ -75,6 +77,8 @@ class CreateTripViewModel : ViewModel() {
         val currentDays = _recurringDays.value ?: BooleanArray(7)
         currentDays[dayIndex] = isSelected
         _recurringDays.value = currentDays
+
+        Log.d("setRecurringDay", "Day $dayIndex is ${currentDays[dayIndex]}")
     }
 
     fun setRecurringEndDate(date: String) {
@@ -86,6 +90,7 @@ class CreateTripViewModel : ViewModel() {
         navController.navigate(R.id.navigation_dashboard)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun saveTrip(firebaseService: FirebaseService) {
         viewModelScope.launch {
             try {
