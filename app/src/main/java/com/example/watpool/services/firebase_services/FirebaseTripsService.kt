@@ -245,15 +245,12 @@ class FirebaseTripsService: TripsService {
                                         val distanceInM =
                                             GeoFireUtils.getDistanceBetween(docLocation, center)
                                         if (distanceInM <= radiusInM) {
-                                            val updatedData = doc.data?.toMutableMap() ?: mutableMapOf()
-                                            updatedData["latitude"] = tripLat
-                                            updatedData["longitude"] = tripLng
                                             matchingDocs.add(doc)
                                         }
                                     }
 
                                 } else {
-                                    Log.e("TRIP TEST", "Error getting coordinates: ", coordSnapshotTask.exception)
+                                    Log.e("Trip Fetch Error", "Error getting coordinates: ", coordSnapshotTask.exception)
                                 }
                                 true
                             }
