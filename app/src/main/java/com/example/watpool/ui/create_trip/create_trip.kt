@@ -13,6 +13,7 @@ import android.graphics.Color
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.os.IBinder
+import android.text.InputType
 import android.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -136,6 +137,7 @@ class create_trip : Fragment() {
         destinationSearchView.setQueryHint("Enter destination");
         destinationSearchView.isIconified = false
 
+
         // Ensures each search view has separate queries
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
             if (pickupSearchView.hasFocus()) {
@@ -205,6 +207,8 @@ class create_trip : Fragment() {
         viewModel.selectedTime.observe(viewLifecycleOwner, Observer {
             binding.idTVSelectedTime.text = it
         })
+
+        binding.numAvailableSeats.inputType = InputType.TYPE_CLASS_NUMBER
         viewModel.numAvailableSeats.observe(viewLifecycleOwner, Observer {
             binding.numAvailableSeats.setText(it)
         })
