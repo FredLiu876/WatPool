@@ -245,6 +245,12 @@ class FirebaseTripsService: TripsService {
                                         val distanceInM =
                                             GeoFireUtils.getDistanceBetween(docLocation, center)
                                         if (distanceInM <= radiusInM) {
+                                            doc.reference.update(
+                                                mapOf(
+                                                    "latitude" to tripLat,
+                                                    "longitude" to tripLng
+                                                )
+                                            )
                                             matchingDocs.add(doc)
                                         }
                                     }
