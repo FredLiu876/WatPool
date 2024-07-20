@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.os.IBinder
@@ -25,6 +26,7 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.ToggleButton
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -101,6 +103,7 @@ class create_trip : Fragment() {
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -130,11 +133,11 @@ class create_trip : Fragment() {
         ))
 
         pickupSearchView = binding.pickupLocation
-        pickupSearchView.setQueryHint("Enter pickup location");
+        pickupSearchView.setQueryHint("Enter pickup location")
         pickupSearchView.isIconified = false
 
         destinationSearchView = binding.destination
-        destinationSearchView.setQueryHint("Enter destination");
+        destinationSearchView.setQueryHint("Enter destination")
         destinationSearchView.isIconified = false
 
 
@@ -242,7 +245,10 @@ class create_trip : Fragment() {
                     theme.applyStyle(R.style.TimePickerDialogTheme, true)
                 },
                 { _, selectedHour, selectedMinute ->
-                    val time = SimpleDateFormat("h:mm a", Locale.getDefault()).format(c.time)
+                    val calendar = Calendar.getInstance()
+                    calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
+                    calendar.set(Calendar.MINUTE, selectedMinute)
+                    val time = SimpleDateFormat("h:mm a", Locale.getDefault()).format(calendar.time)
                     viewModel.setSelectedTime(time)
                     selectedTimeTV.text = "Time: $time"
                 },
