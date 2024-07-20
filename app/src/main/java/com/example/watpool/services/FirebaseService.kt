@@ -76,6 +76,16 @@ class FirebaseService : Service() {
         return authService.currentUser()
     }
 
+    fun fetchUserByDocumentId(id: String): Task<DocumentSnapshot> {
+        return userService.fetchUserByDocumentId(id)
+    }
+
+
+    fun fetchCoordinatesByDocumentId(id: String): Task<DocumentSnapshot> {
+        return coordinateService.fetchCoordinatesByDocumentId(id)
+    }
+
+
     fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }

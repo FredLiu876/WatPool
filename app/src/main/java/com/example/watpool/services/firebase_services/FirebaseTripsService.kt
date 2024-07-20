@@ -2,6 +2,7 @@ package com.example.watpool.services.firebase_services
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.interfaces.TripsService
 import com.firebase.geofire.GeoFireUtils
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.util.UUID
 
@@ -222,36 +224,57 @@ class FirebaseTripsService: TripsService {
         return Tasks.whenAllComplete(tasks)
             .continueWith {
                 val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
+                val coordTasks: MutableList<Task<Boolean>> = ArrayList()
+
                 for (task in tasks) {
                     val snap = task.result
-                    var coordFilterName: String = "starting_coordinate"
+                    var coordFilterName = "starting_coordinate"
                     if (!startFilter) {
                         coordFilterName = "ending_coordinate"
                     }
                     for (doc in snap!!.documents) {
+                        val coordTask = coordinatesRef.document(doc.getString(coordFilterName)!!).get()
+                            .continueWith { coordSnapshotTask ->
+                                if (coordSnapshotTask.isSuccessful) {
+                                    val coordSnapshot = coordSnapshotTask.result
+                                    val tripLat = coordSnapshot?.getDouble("latitude")
+                                    val tripLng = coordSnapshot?.getDouble("longitude")
 
-                        // get the startCoordinate id
-                        val coordTask = coordinatesRef.whereEqualTo("id", doc.getString(coordFilterName)).get()
-                        val coordSnapshot = Tasks.await(coordTask)
+                                    if (tripLat != null && tripLng != null) {
+                                        val docLocation = GeoLocation(tripLat, tripLng)
+                                        val distanceInM =
+                                            GeoFireUtils.getDistanceBetween(docLocation, center)
+                                        if (distanceInM <= radiusInM) {
+                                            val updatedData = doc.data?.toMutableMap() ?: mutableMapOf()
+                                            updatedData["latitude"] = tripLat
+                                            updatedData["longitude"] = tripLng
+                                            matchingDocs.add(doc)
+                                        }
+                                    }
 
-                        val tripLat = coordSnapshot?.documents?.firstOrNull()?.getDouble("latitude")
-                        val tripLng = coordSnapshot?.documents?.firstOrNull()?.getDouble("longitude")
-
-
-                        if (tripLat != null && tripLng != null) {
-                            val docLocation = GeoLocation(tripLat, tripLng)
-                            val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
-                            if (distanceInM <= radiusInM) {
-                                doc.data?.put("latitude", tripLat)
-                                doc.data?.put("longitude", tripLng)
-                                matchingDocs.add(doc)
+                                } else {
+                                    Log.e("TRIP TEST", "Error getting coordinates: ", coordSnapshotTask.exception)
+                                }
+                                true
                             }
-                        }
+                            coordTasks.add(coordTask)
+
                     }
+
                 }
 
-                matchingDocs
+                // return@continueWith
+                Tasks.whenAll(coordTasks).continueWith { _ ->
+                    Log.d(
+                        "Trip Fetch",
+                        "Returning all trips by location"
+                    )
+                    matchingDocs
+                }.result
+
             }
+
+
 
     }
 
