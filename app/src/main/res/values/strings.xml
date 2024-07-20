@@ -39,4 +39,5 @@
     <string name="emaill">Email:</string>
     <string name="rider_rating">Rider Rating:</string>
     <string name="driver_rating">Driver Rating:</string>
+    <string name="profile_header">Profile</string>
 </resources>
