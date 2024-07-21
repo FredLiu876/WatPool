@@ -16,18 +16,42 @@
         android:padding="16dp"
         tools:context=".ui.profile.ProfileFragment">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/profileHeaderLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/profile_header"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:elevation="4dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:textSize="48sp"
-            android:textColor="@color/black"
-            android:layout_marginTop="36dp"
-            android:textStyle="bold"
-            android:layout_weight="1"/>
+            app:layout_constraintBottom_toTopOf="@+id/profileDetailsLayout"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:id="@+id/profile"
+                android:layout_width="64sp"
+                android:layout_height="64sp"
+                android:contentDescription="@string/logo_of_the_app"
+                android:src="@drawable/ic_profile"
+                android:layout_marginBottom="32dp"
+                android:layout_marginEnd="16dp"/>
+
+            <TextView
+                android:id="@+id/textName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/n_a"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textSize="48sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/profileDetailsLayout"
@@ -41,30 +65,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/buttonLogout">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/namee"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_weight="1"/>
-
-                <TextView
-                    android:id="@+id/textName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/n_a"
-                    android:textSize="18sp"
-                    android:layout_weight="1"/>
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
