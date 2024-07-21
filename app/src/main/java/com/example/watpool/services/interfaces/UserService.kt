@@ -7,7 +7,7 @@ import com.google.firebase.firestore.QuerySnapshot
 interface UserService {
     fun fetchUsersById(id: String): Task<QuerySnapshot>
     fun fetchUserByDocumentId(id: String): Task<DocumentSnapshot>
-    fun fetchUsersByUsername(username: String): Task<QuerySnapshot>
+    fun fetchUsersByEmail(email: String): Task<QuerySnapshot>
     fun createUser(email: String, name: String): Task<DocumentReference>
     fun createDriver(username: String, licenseNumber: String, carModel: String, carColor: String ): Task<Void>
 }
