@@ -15,7 +15,6 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.util.UUID
 
@@ -32,7 +31,19 @@ class FirebaseTripsService: TripsService {
 
     // driver posting a new trip
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun createTrip(driverId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate): Task<DocumentReference> {
+    override fun createTrip(
+        driverId: String,
+        startingCoordinateId: String,
+        endingCoordinateId: String,
+        startGeohash: String,
+        endGeohash: String,
+        tripDate: LocalDate,
+        maxPassengers: String,
+        isRecurring: Boolean,
+        recurringDayOfTheWeek: DayOfTheWeek,
+        recurringEndDate: LocalDate,
+        timeString: String
+    ): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val trip = hashMapOf(
             "id" to id,
@@ -43,7 +54,8 @@ class FirebaseTripsService: TripsService {
             "trip_date" to tripDate.toString(),
             "driver_id" to driverId,
             "start_geohash" to startGeohash,
-            "end_geohash" to endGeohash
+            "end_geohash" to endGeohash,
+            "time" to timeString
         )
 
         if (isRecurring) {

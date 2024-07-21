@@ -43,6 +43,16 @@
             android:layout_margin="10dp"
             android:elevation="5dp" />
 
+        <EditText
+            android:id="@+id/numAvailableSeats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="Enter # of available seats"
+            android:inputType="text"
+            android:padding="10dp"
+            tools:ignore="HardcodedText" />
+
         <TextView
             android:id="@+id/idTVSelectedDate"
             android:layout_width="match_parent"
@@ -204,16 +214,6 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp" />
         </LinearLayout>
-
-        <EditText
-            android:id="@+id/numAvailableSeats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints=""
-            android:hint="Enter # of available seats"
-            android:inputType="text"
-            android:padding="15dp"
-            tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/createTripBtn"

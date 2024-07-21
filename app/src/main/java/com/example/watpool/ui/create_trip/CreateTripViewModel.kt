@@ -12,8 +12,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.firebase_services.FirebaseTripsService
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentReference
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -172,74 +170,49 @@ class CreateTripViewModel : ViewModel() {
                 val startLocation = _pickupLocation.value ?: ""
                 val endLocation = _destination.value ?: ""
 
-                // TODO: get coords from the maps UI?
-                val start = getCoordinates(startLocation)
-                val startLatitude = start.first
-                val startLongitude = start.second
-
-                val end = getCoordinates(endLocation)
-                val endLatitude = end.first
-                val endLongitude = end.second
-
-                Log.d("CreateTripViewModel", "Start location is ${startLatitude}, ${startLongitude}")
-                Log.d("CreateTripViewModel", "End location is ${endLatitude}, ${endLongitude}")
+                // Get coordinates from location using google maps api
+                val startLatLng = getCoordinates(startLocation)
+                val endLatLng = getCoordinates(endLocation)
 
                 val dateFormatter = DateTimeFormatter.ofPattern("d-M-yyyy")
                 val tripDate = LocalDate.parse(_selectedDate.value, dateFormatter)
                 val maxPassengers = _numAvailableSeats.value ?: "0"
+
+                val timeString = _selectedTime.value ?: ""
 
                 val isRecurring = _isRecurring.value ?: false
 
                 val result = if (isRecurring) {
                     val recurringDayOfTheWeek = getRecurringDay(_recurringDays.value!!)
                     val recurringEndDate = LocalDate.parse(recurringEndDate.value!!, dateFormatter)
-                    val result = firebaseService.createTrip(
+                    firebaseService.createTrip(
                         driverId,
-                        startLatitude,
-                        endLatitude,
-                        startLongitude,
-                        endLongitude,
+                        startLatLng.first,
+                        startLatLng.second,
+                        endLatLng.first,
+                        endLatLng.second,
                         startLocation,
                         endLocation,
                         tripDate,
                         maxPassengers,
                         isRecurring,
                         recurringDayOfTheWeek,
-                        recurringEndDate
+                        recurringEndDate,
+                        timeString
                     ).await()
-
-                    Log.d("CreateTripViewModel", "Recurring Trip Created:")
-                    Log.d("CreateTripViewModel", "Pickup Location: $startLocation")
-                    Log.d("CreateTripViewModel", "Destination: $endLocation")
-                    Log.d("CreateTripViewModel", "Selected Date: ${tripDate.format(dateFormatter)}")
-                    Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
-                    Log.d("CreateTripViewModel", "Number of Available Seats: $maxPassengers")
-                    Log.d("CreateTripViewModel", "Recurring Day: $recurringDayOfTheWeek")
-                    Log.d("CreateTripViewModel", "Recurring End Date: ${recurringEndDate.format(dateFormatter)}")
-
-                    result
-                }
-                else {
-                    val result = firebaseService.createTrip(
+                } else {
+                    firebaseService.createTrip(
                         driverId,
-                        startLatitude,
-                        endLatitude,
-                        startLongitude,
-                        endLongitude,
+                        startLatLng.first,
+                        startLatLng.second,
+                        endLatLng.first,
+                        endLatLng.second,
                         startLocation,
                         endLocation,
                         tripDate,
-                        maxPassengers
+                        maxPassengers,
+                        timeString = timeString
                     ).await()
-
-                    Log.d("CreateTripViewModel", "Non-Recurring Trip Created:")
-                    Log.d("CreateTripViewModel", "Pickup Location: $startLocation")
-                    Log.d("CreateTripViewModel", "Destination: $endLocation")
-                    Log.d("CreateTripViewModel", "Selected Date: ${tripDate.format(dateFormatter)}")
-                    Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
-                    Log.d("CreateTripViewModel", "Number of Available Seats: $maxPassengers")
-
-                    result
                 }
 
                 result.addOnSuccessListener { documentReference ->
@@ -247,11 +220,6 @@ class CreateTripViewModel : ViewModel() {
                 }.addOnFailureListener { e ->
                     _tripCreationStatus.postValue("Error creating trip: ${e.message}")
                 }
-
-                val currentUserId = firebaseService.currentUser()
-                Log.d("CreateTripViewModel", "current user ID is ${currentUserId}")
-
-                Log.d("CreateTripViewModel","Trip created successfully")
 
             } catch (e: Exception) {
                 _tripCreationStatus.postValue("Error creating trip: ${e.message}")

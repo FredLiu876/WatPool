@@ -113,7 +113,21 @@ class FirebaseService : Service() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTrip(driverId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<Task<DocumentReference>> {
+    fun createTrip(
+        driverId: String,
+        startLatitude: Double,
+        startLongitude: Double,
+        endLatitude: Double,
+        endLongitude: Double,
+        startLocation: String,
+        endLocation: String,
+        tripDate: LocalDate,
+        maxPassengers: String,
+        isRecurring: Boolean = false,
+        recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY,
+        recurringEndDate: LocalDate = LocalDate.now(),
+        timeString: String
+    ): Task<Task<DocumentReference>> {
         return Tasks.whenAllComplete(
             coordinateService.addCoordinate(driverId, startLatitude, startLongitude, startLocation),
             coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
@@ -123,7 +137,19 @@ class FirebaseService : Service() {
                 val endingCoordinateId = (tasks.result[1].result as? DocumentReference)?.id ?: ""
                 val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
                 val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
-                tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
+                tripsService.createTrip(
+                    driverId,
+                    startingCoordinateId,
+                    endingCoordinateId,
+                    startGeohash,
+                    endGeohash,
+                    tripDate,
+                    maxPassengers,
+                    isRecurring,
+                    recurringDayOfTheWeek,
+                    recurringEndDate,
+                    timeString
+                )
             } else {
                 Tasks.forException(tasks.exception ?: Exception("Unknown error"))
             }

@@ -59,7 +59,8 @@
 | July 18, 2024 | 1    | Fixed starting and ending coordinate IDs in createTrip in TripService         |
 | July 20, 2024 | 1.5  | Removed notification tab and directly connected dashboard to create trip form |
 | July 20, 2024 | 2    | Added UI for recurring trips in create trips form                             |
-| July 20, 2024 | 3    | Improved UI on create trip page                                               |
+| July 20, 2024 | 3    | Improved UI on create trips page                                              |
+| July 20, 2024 | 2.5  | Connected recurring trips to DB and fixed bugs                                |
 
 
 | Govind        | Time | Task                                                               |
