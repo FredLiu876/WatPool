@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DatePickerDialogTheme">
+        <item name="colorAccent">@color/primary</item>
+        <item name="android:colorAccent">@color/primary_variant</item>
+    </style>
+
+    <style name="TimePickerDialogTheme">
+        <item name="colorAccent">@color/primary</item>
+        <item name="android:colorAccent">@color/primary_variant</item>
+    </style>
+</resources>
