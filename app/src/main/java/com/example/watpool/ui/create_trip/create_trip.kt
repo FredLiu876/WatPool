@@ -88,8 +88,6 @@ class create_trip : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as AppCompatActivity).supportActionBar?.hide()
-
         // Initialize the button and text view from the binding
         pickDateBtn = binding.idBtnPickDate
         selectedDateTV = binding.idTVSelectedDate

@@ -10,6 +10,7 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -21,6 +22,7 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -28,12 +30,15 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
 import com.example.watpool.services.models.Trips
+import com.example.watpool.services.models.Trips2
+import com.example.watpool.ui.tripList.TripListFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -42,8 +47,10 @@ import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
+import com.google.firebase.firestore.toObject
 import java.io.IOException
 import java.util.Locale
 import org.json.JSONObject
@@ -100,19 +107,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
-        val postings = firebaseService?.fetchTripsByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, true)
-        postings?.addOnSuccessListener {
-            for (document in it) {
-                Log.e("MapsTeswt", "showpostings broken")
-                val dataModel = document.toObject(Trips::class.java)
-                if (dataModel != null) {
-                    Log.e("MapsTeswt", dataModel.driverId)
+
+        /*val postings = firebaseService?.fetchTripsByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, false)
+        postings?.addOnSuccessListener { documentSnapshot ->
+            for (document in documentSnapshot) {
+                val dataModel = document.toObject(Trips2::class.java)
+                if(dataModel != null){
                 }
             }
         }?.addOnFailureListener {
             Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
-        }
+        }*/
+
 
         /*val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
         postings?.addOnSuccessListener { documentSnapshot ->
@@ -130,7 +138,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     }
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -165,6 +173,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         }
 
+        val createButton: MaterialButton = binding.btnCreate
+        createButton.setOnClickListener {
+            val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment("Waterloo", "Toronto")
+            findNavController().navigate(action)
+        }
+
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
             startPlacesFragment.clearList()
@@ -173,21 +187,21 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             val cameraPosition = map?.cameraPosition?.target
             cameraPosition?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
-                showPostingsInRadius(latLng, searchRadius)
+                showPostingsInRadius(latLng, startSearchRadius)
             }
         }
 
         val sliderLabel : TextView = binding.textRadius
 
         val radiusSlider: Slider = binding.sliderRadius
-        searchRadius = radiusSlider.value.toDouble()
+        startSearchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
             startPlacesFragment.clearList()
             destinationPlacesFragment.clearList()
-            searchRadius = value.toDouble()
+            startSearchRadius = value.toDouble()
             drawRadius()
             sliderLabel.text = buildString {
-                append("$searchRadius")
+                append("$startSearchRadius")
                 append(" km")
             }
         }
@@ -268,7 +282,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             map?.addCircle(
                 CircleOptions()
                     .center(it)
-                    .radius(searchRadius * 1000)
+                    .radius(startSearchRadius * 1000)
                     .strokeColor(0xFF0000FF.toInt())
                     .fillColor(0x220000FF)
                     .strokeWidth(5f)

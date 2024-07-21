@@ -2,6 +2,7 @@ package com.example.watpool.services.firebase_services
 
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.interfaces.TripsService
 import com.firebase.geofire.GeoFireUtils
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.util.UUID
 
@@ -199,7 +201,12 @@ class FirebaseTripsService: TripsService {
         return tripUpdate(tripId, tripUpdate)
     }
 
-    override fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, startFilter: Boolean): Task<MutableList<DocumentSnapshot>> {
+    override fun fetchTripsByLocation(
+        latitude: Double,
+        longitude: Double,
+        radiusInKm: Double,
+        startFilter: Boolean
+    ): Task<MutableList<DocumentSnapshot>> {
         // Find the bounding box for quick filtering
         val center = GeoLocation(latitude, longitude)
         val radiusInM = radiusInKm * 1000
@@ -220,39 +227,53 @@ class FirebaseTripsService: TripsService {
         }
 
         return Tasks.whenAllComplete(tasks)
-            .continueWith {
+            .continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    throw task.exception ?: Exception("Unknown error")
+                }
+
                 val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
-                for (task in tasks) {
-                    val snap = task.result
-                    var coordFilterName: String = "starting_coordinate"
+                val coordTasks: MutableList<Task<DocumentSnapshot>> = ArrayList()
+
+                for (queryTask in tasks) {
+                    val snap = queryTask.result
+                    var coordFilterName = "starting_coordinate"
                     if (!startFilter) {
                         coordFilterName = "ending_coordinate"
                     }
                     for (doc in snap!!.documents) {
+                        val coordTask = coordinatesRef.document(doc.getString(coordFilterName)!!).get()
+                            .continueWithTask { coordSnapshotTask ->
+                                if (coordSnapshotTask.isSuccessful) {
+                                    val coordSnapshot = coordSnapshotTask.result
+                                    val tripLat = coordSnapshot?.getDouble("latitude")
+                                    val tripLng = coordSnapshot?.getDouble("longitude")
 
-                        // get the startCoordinate id
-                        val coordTask = coordinatesRef.whereEqualTo("id", doc.getString(coordFilterName)).get()
-                        val coordSnapshot = Tasks.await(coordTask)
-
-                        val tripLat = coordSnapshot?.documents?.firstOrNull()?.getDouble("latitude")
-                        val tripLng = coordSnapshot?.documents?.firstOrNull()?.getDouble("longitude")
-
-
-                        if (tripLat != null && tripLng != null) {
-                            val docLocation = GeoLocation(tripLat, tripLng)
-                            val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
-                            if (distanceInM <= radiusInM) {
-                                doc.data?.put("latitude", tripLat)
-                                doc.data?.put("longitude", tripLng)
-                                matchingDocs.add(doc)
+                                    if (tripLat != null && tripLng != null) {
+                                        val docLocation = GeoLocation(tripLat, tripLng)
+                                        val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
+                                        if (distanceInM <= radiusInM) {
+                                            synchronized(matchingDocs) {
+                                                matchingDocs.add(doc)
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Log.e("Trip Fetch Error", "Error getting coordinates: ", coordSnapshotTask.exception)
+                                }
+                                coordSnapshotTask
                             }
-                        }
+                        coordTasks.add(coordTask)
                     }
                 }
 
-                matchingDocs
+                Tasks.whenAllComplete(coordTasks)
+                    .continueWith { _ ->
+                        matchingDocs
+                    }
             }
-
     }
 
+
 }
+

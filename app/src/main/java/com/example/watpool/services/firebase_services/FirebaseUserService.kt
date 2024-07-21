@@ -6,6 +6,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
@@ -19,6 +20,10 @@ class FirebaseUserService: UserService {
 
     override fun fetchUsersById(id: String): Task<QuerySnapshot> {
         return usersRef.whereEqualTo("id", id).get()
+    }
+
+    override fun fetchUserByDocumentId(id: String): Task<DocumentSnapshot> {
+        return usersRef.document(id).get()
     }
     override fun fetchUsersByUsername(email: String): Task<QuerySnapshot> {
         return usersRef.whereEqualTo("email", email).get()

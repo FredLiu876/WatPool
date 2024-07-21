@@ -77,6 +77,16 @@ class FirebaseService : Service() {
         return authService.currentUser()
     }
 
+    fun fetchUserByDocumentId(id: String): Task<DocumentSnapshot> {
+        return userService.fetchUserByDocumentId(id)
+    }
+
+
+    fun fetchCoordinatesByDocumentId(id: String): Task<DocumentSnapshot> {
+        return coordinateService.fetchCoordinatesByDocumentId(id)
+    }
+
+
     fun fetchCoordinatesByDriverId(driverId: String): Task<QuerySnapshot> {
         return coordinateService.fetchCoordinatesByDriverId(driverId)
     }
@@ -274,7 +284,51 @@ class FirebaseService : Service() {
     // Specify a location and a range to get trips starting / ending within that range
     // fetches by start filter by default, set to false to fetch by end coordinates
     fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, fetchByStart: Boolean = true): Task<MutableList<DocumentSnapshot>> {
-        return tripsService.fetchTripsByLocation(latitude, longitude, radiusInKm, fetchByStart)
+        return tripsCoordinateConnectorLocation(tripsService.fetchTripsByLocation(latitude, longitude, radiusInKm, fetchByStart))
     }
+
+    fun tripsCoordinateConnectorLocation(task: Task<MutableList<DocumentSnapshot>>): Task<MutableList<DocumentSnapshot>> {
+        return task
+            .continueWithTask { task ->
+                if (task.isSuccessful) {
+                    val documents = task.result
+                    if (documents.isNotEmpty()) {
+                        val updateTasks = documents.map { document ->
+                            val startCoordinateId = document.getString("starting_coordinate") ?: ""
+                            val endCoordinateId = document.getString("ending_coordinate") ?: ""
+
+                            Tasks.whenAllComplete(
+                                coordinateService.fetchCoordinatesById(startCoordinateId),
+                                coordinateService.fetchCoordinatesById(endCoordinateId)
+                            ).continueWith { coordTasks ->
+                                val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
+                                val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
+                                val startLatitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val startLongitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                val endLatitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val endLongitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                document.reference.update(
+                                    mapOf(
+                                        "to" to startLocation,
+                                        "from" to endLocation,
+                                        "startLatLng" to LatLng(startLatitude, startLongitude),
+                                        "endLatLng" to LatLng(endLatitude, endLongitude)
+                                    )
+                                )
+                                document
+                            }
+                        }
+                        Tasks.whenAllComplete(updateTasks)
+                            .continueWith { it -> it.result.map { it.result as DocumentSnapshot } as MutableList<DocumentSnapshot> }
+                    } else {
+                        Tasks.forResult(mutableListOf<DocumentSnapshot>())
+                    }
+                } else {
+                    Tasks.forException(task.exception ?: Exception("Unknown error"))
+                }
+            }
+    }
+
+
 
 }

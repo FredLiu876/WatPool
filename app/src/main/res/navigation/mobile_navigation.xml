@@ -43,7 +43,19 @@
         android:id="@+id/map"
         android:name="com.example.watpool.ui.maps.MapsFragment"
         android:label="Maps"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/fragment_maps" >
+        <argument
+            android:name="startDestination"
+            app:argType="string" />
+        <argument
+            android:name="endDestination"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_mapFragment_to_create_tripFragment"
+            app:destination="@id/fragment_create_trip"
+            app:popUpTo="@id/fragment_create_trip"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/fragment_create_trip"
