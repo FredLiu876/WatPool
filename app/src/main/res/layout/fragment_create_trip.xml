@@ -205,11 +205,12 @@
                 android:textColor="@color/black"
                 android:padding="10dp"/>
 
-            <Button
-                android:id="@+id/recurringEndDateBtn"
+            <Spinner
+                android:id="@+id/recurringEndDateSpinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Pick End Date"/>
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp" />
         </LinearLayout>
 
         <EditText

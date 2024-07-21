@@ -11,6 +11,9 @@ import com.example.watpool.R
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.watpool.services.FirebaseService
+import com.example.watpool.services.firebase_services.FirebaseTripsService
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentReference
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -19,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
+import java.util.Calendar
 
 class CreateTripViewModel : ViewModel() {
 
@@ -49,6 +53,16 @@ class CreateTripViewModel : ViewModel() {
     private val _recurringEndDate = MutableLiveData<String>()
     val recurringEndDate: LiveData<String> get() = _recurringEndDate
 
+    private val _recurringEndDates = MutableLiveData<List<String>>()
+    val recurringEndDates: LiveData<List<String>> get() = _recurringEndDates
+
+    private var _selectedCalendar = MutableLiveData<Calendar>()
+    val selectedCalendar: LiveData<Calendar> = _selectedCalendar
+
+    init {
+        _selectedCalendar.value = Calendar.getInstance()
+    }
+
     fun setPickupLocation(location: String) {
         _pickupLocation.value = location
     }
@@ -57,8 +71,22 @@ class CreateTripViewModel : ViewModel() {
         _destination.value = dest
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun setSelectedDate(date: String) {
         _selectedDate.value = date
+        updateDayToggleForDate(date)
+        generateRecurringEndDates(date)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun updateDayToggleForDate(dateString: String) {
+        val formatter = DateTimeFormatter.ofPattern("d-M-yyyy")
+        val date = LocalDate.parse(dateString, formatter)
+        val dayOfWeek = date.dayOfWeek.value % 7  // Sunday is 0, Monday is 1, etc.
+
+        val newDays = BooleanArray(7) { false }
+        newDays[dayOfWeek] = true
+        _recurringDays.value = newDays
     }
 
     fun setSelectedTime(time: String) {
@@ -71,6 +99,7 @@ class CreateTripViewModel : ViewModel() {
 
     fun setIsRecurring(isRecurring: Boolean) {
         _isRecurring.value = isRecurring
+        Log.d("isRecurring", "isRecurring is $isRecurring")
     }
 
     fun setRecurringDay(dayIndex: Int, isSelected: Boolean) {
@@ -85,9 +114,49 @@ class CreateTripViewModel : ViewModel() {
         _recurringEndDate.value = date
     }
 
+    fun updateSelectedDateTime(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, dayOfMonth, hourOfDay, minute)
+        _selectedCalendar.value = calendar
+    }
+
     fun onCreateTrip(navController: NavController) {
         // Handle the button click and navigate to the dashboard screen
         navController.navigate(R.id.navigation_dashboard)
+    }
+
+    fun getRecurringDay(recurringDays: BooleanArray): FirebaseTripsService.DayOfTheWeek {
+        val selectedIndex = recurringDays.indexOfFirst { it }
+        val firebaseDayOfWeek = when (selectedIndex) {
+            0 -> FirebaseTripsService.DayOfTheWeek.SUNDAY
+            1 -> FirebaseTripsService.DayOfTheWeek.MONDAY
+            2 -> FirebaseTripsService.DayOfTheWeek.TUESDAY
+            3 -> FirebaseTripsService.DayOfTheWeek.WEDNESDAY
+            4 -> FirebaseTripsService.DayOfTheWeek.THURSDAY
+            5 -> FirebaseTripsService.DayOfTheWeek.FRIDAY
+            6 -> FirebaseTripsService.DayOfTheWeek.SATURDAY
+            else -> throw IllegalArgumentException("Invalid day index")
+        }
+
+        Log.d("getRecurringDay", "Selected day is $firebaseDayOfWeek")
+        return firebaseDayOfWeek
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun generateRecurringEndDates(startDateString: String) {
+        val formatter = DateTimeFormatter.ofPattern("d-M-yyyy")
+        val startDate = LocalDate.parse(startDateString, formatter)
+        val endDate = startDate.plusMonths(3)
+
+        val dates = mutableListOf<String>()
+        var currentDate = startDate.plusWeeks(1)
+
+        while (currentDate <= endDate) {
+            dates.add(currentDate.format(formatter))
+            currentDate = currentDate.plusWeeks(1)
+        }
+
+        _recurringEndDates.value = dates
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -100,7 +169,7 @@ class CreateTripViewModel : ViewModel() {
                 val endLocation = _destination.value ?: ""
 
                 // TODO: get coords from the maps UI?
-                var start = getCoordinates(startLocation)
+                val start = getCoordinates(startLocation)
                 val startLatitude = start.first
                 val startLongitude = start.second
 
@@ -115,17 +184,38 @@ class CreateTripViewModel : ViewModel() {
                 val tripDate = LocalDate.parse(_selectedDate.value, dateFormatter)
                 val maxPassengers = _numAvailableSeats.value ?: "0"
 
-                val result = firebaseService.createTrip(
-                    driverId,
-                    startLatitude,
-                    endLatitude,
-                    startLongitude,
-                    endLongitude,
-                    startLocation,
-                    endLocation,
-                    tripDate,
-                    maxPassengers
-                ).await()
+                val isRecurring = _isRecurring.value ?: false
+
+                val result = if (isRecurring) {
+                    val recurringDayOfTheWeek = getRecurringDay(_recurringDays.value!!)
+
+                    firebaseService.createTrip(
+                        driverId,
+                        startLatitude,
+                        endLatitude,
+                        startLongitude,
+                        endLongitude,
+                        startLocation,
+                        endLocation,
+                        tripDate,
+                        maxPassengers,
+                        isRecurring,
+                        recurringDayOfTheWeek
+                    ).await()
+                }
+                else {
+                    firebaseService.createTrip(
+                        driverId,
+                        startLatitude,
+                        endLatitude,
+                        startLongitude,
+                        endLongitude,
+                        startLocation,
+                        endLocation,
+                        tripDate,
+                        maxPassengers
+                    ).await()
+                }
 
                 result.addOnSuccessListener { documentReference ->
                     _tripCreationStatus.postValue("Trip created successfully with ID: ${documentReference.id}")
