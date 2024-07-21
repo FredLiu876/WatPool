@@ -48,7 +48,7 @@ class WelcomeFragment : Fragment() {
     private fun handleUserLoggedIn(user: FirebaseUser?) {
         if (user != null) {
             // User is already logged in, navigate to the home screen
-            findNavController().navigate(R.id.navigation_profile)
+            findNavController().navigate(R.id.map)
         }
     }
 

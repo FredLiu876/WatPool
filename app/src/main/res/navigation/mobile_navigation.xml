@@ -106,5 +106,8 @@
         <argument
             android:name="tripId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_ongoingTripFragment_to_tripListFragment2"
+            app:destination="@id/tripListFragment" />
     </fragment>
 </navigation>
