@@ -251,48 +251,6 @@ class create_trip : Fragment() {
             showTimePicker()
         }
 
-        // Set onClickListeners
-//        pickDateBtn.setOnClickListener {
-//            val c = Calendar.getInstance()
-//            val year = c.get(Calendar.YEAR)
-//            val month = c.get(Calendar.MONTH)
-//            val day = c.get(Calendar.DAY_OF_MONTH)
-//            val datePickerDialog = DatePickerDialog(
-//                ContextThemeWrapper(requireContext(), androidx.appcompat.R.style.Theme_AppCompat_Dialog).apply {
-//                    theme.applyStyle(R.style.DatePickerDialogTheme, true)
-//                },
-//                { _, year, monthOfYear, dayOfMonth ->
-//                    val date = "$dayOfMonth-${monthOfYear + 1}-$year"
-//                    viewModel.setSelectedDate(date)
-//                    val formattedDate = formatDateString(date)
-//                    selectedDateTV.text = "Start Date: $formattedDate"
-//                },
-//                year, month, day
-//            )
-//            datePickerDialog.show()
-//        }
-//
-//        pickTimeBtn.setOnClickListener {
-//            val c = Calendar.getInstance()
-//            val hour = c.get(Calendar.HOUR_OF_DAY)
-//            val minute = c.get(Calendar.MINUTE)
-//            val timePickerDialog = TimePickerDialog(
-//                ContextThemeWrapper(requireContext(), androidx.appcompat.R.style.Theme_AppCompat_Dialog).apply {
-//                    theme.applyStyle(R.style.TimePickerDialogTheme, true)
-//                },
-//                { _, selectedHour, selectedMinute ->
-//                    val calendar = Calendar.getInstance()
-//                    calendar.set(Calendar.HOUR_OF_DAY, selectedHour)
-//                    calendar.set(Calendar.MINUTE, selectedMinute)
-//                    val time = SimpleDateFormat("h:mm a", Locale.getDefault()).format(calendar.time)
-//                    viewModel.setSelectedTime(time)
-//                    selectedTimeTV.text = "Time: $time"
-//                },
-//                hour, minute, false
-//            )
-//            timePickerDialog.show()
-//        }
-
         createTripBtn.setOnClickListener {
             viewModel.setNumAvailableSeats(binding.numAvailableSeats.text.toString())
             firebaseService?.let { service ->
@@ -305,7 +263,9 @@ class create_trip : Fragment() {
         viewModel.tripCreationStatus.observe(viewLifecycleOwner, Observer { status ->
             Toast.makeText(context, status, Toast.LENGTH_LONG).show()
             if (status.startsWith("Trip created successfully")) {
+                resetSearchViews()
                 viewModel.onCreateTrip(findNavController())
+                viewModel.resetTripCreationStatus()
             }
 
             // for debugging saveTrip
@@ -340,6 +300,19 @@ class create_trip : Fragment() {
         val serviceIntent = Intent(requireContext(), FirebaseService::class.java)
         requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
         firebaseBound = true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        resetSearchViews()
+    }
+
+    private fun resetSearchViews() {
+        viewModel.clearSearchViewData()
+        pickupSearchView.setQuery("", false)
+        destinationSearchView.setQuery("", false)
+        pickupPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
     }
 
     override fun onStop() {

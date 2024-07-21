@@ -6,19 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".ui.maps.MapsFragment">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/pickup_location"
@@ -32,8 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:elevation="5dp"
-            />
+            android:elevation="5dp" />
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/destination"
@@ -47,8 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:elevation="5dp"
-            />
+            android:elevation="5dp" />
 
         <TextView
             android:id="@+id/idTVSelectedDate"
@@ -99,8 +92,7 @@
             android:text="Make Recurring"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:padding="10dp"
-            />
+            android:padding="10dp" />
 
         <LinearLayout
             android:id="@+id/recurringOptionsLayout"
@@ -233,6 +225,4 @@
 
     </LinearLayout>
 
-
-    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

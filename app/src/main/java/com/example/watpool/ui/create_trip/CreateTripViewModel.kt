@@ -59,9 +59,6 @@ class CreateTripViewModel : ViewModel() {
     private var _selectedCalendar = MutableLiveData<Calendar>()
     val selectedCalendar: LiveData<Calendar> = _selectedCalendar
 
-    private var _tripCreatedSuccessfully = MutableLiveData<Boolean>()
-    val tripCreatedSuccessfully: LiveData<Boolean> get() = _tripCreatedSuccessfully
-
     init {
         _selectedCalendar.value = Calendar.getInstance()
     }
@@ -115,6 +112,10 @@ class CreateTripViewModel : ViewModel() {
 
     fun setRecurringEndDate(date: String) {
         _recurringEndDate.value = date
+    }
+
+    fun resetTripCreationStatus() {
+        _tripCreationStatus.value = ""
     }
 
     fun updateSelectedDateTime(year: Int, month: Int, dayOfMonth: Int, hourOfDay: Int, minute: Int) {
@@ -243,7 +244,6 @@ class CreateTripViewModel : ViewModel() {
 
                 result.addOnSuccessListener { documentReference ->
                     _tripCreationStatus.postValue("Trip created successfully with ID: ${documentReference.id}")
-                    _tripCreatedSuccessfully.postValue(true)
                 }.addOnFailureListener { e ->
                     _tripCreationStatus.postValue("Error creating trip: ${e.message}")
                 }
@@ -314,5 +314,10 @@ class CreateTripViewModel : ViewModel() {
 
             Pair(location.getDouble("lat"), location.getDouble("lng"))
         }
+    }
+
+    fun clearSearchViewData() {
+        _pickupLocation.value = ""
+        _destination.value = ""
     }
 }
