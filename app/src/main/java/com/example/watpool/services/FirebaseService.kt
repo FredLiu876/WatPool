@@ -34,6 +34,7 @@ import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.Locale
 
 
@@ -113,7 +114,7 @@ class FirebaseService : Service() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTrip(driverId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<Task<DocumentReference>> {
+    fun createTrip(driverId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, maxPassengers: String, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now(), tripTime: LocalTime = LocalTime.now()): Task<Task<DocumentReference>> {
         return Tasks.whenAllComplete(
             coordinateService.addCoordinate(driverId, startLatitude, startLongitude, startLocation),
             coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
@@ -123,14 +124,14 @@ class FirebaseService : Service() {
                 val endingCoordinateId = (tasks.result[1].result as? DocumentReference)?.id ?: ""
                 val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
                 val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
-                tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate)
+                tripsService.createTrip(driverId, startingCoordinateId, endingCoordinateId, startGeohash, endGeohash, tripDate, maxPassengers, isRecurring, recurringDayOfTheWeek, recurringEndDate, tripTime)
             } else {
                 Tasks.forException(tasks.exception ?: Exception("Unknown error"))
             }
         }
     }
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTripPosting(userId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now()): Task<Task<DocumentReference>> {
+    fun createTripPosting(userId: String, startLatitude: Double, endLatitude: Double, startLongitude: Double, endLongitude: Double, startLocation: String, endLocation: String, tripDate: LocalDate, isRecurring: Boolean = false, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY, recurringEndDate: LocalDate = LocalDate.now(), tripTime: LocalTime = LocalTime.now()): Task<Task<DocumentReference>> {
         return Tasks.whenAllComplete(
             coordinateService.addCoordinate(userId, startLatitude, startLongitude, startLocation),
             coordinateService.addCoordinate(userId, endLatitude, endLongitude, endLocation)
@@ -153,7 +154,8 @@ class FirebaseService : Service() {
                     tripDate,
                     isRecurring,
                     recurringDayOfTheWeek,
-                    recurringEndDate
+                    recurringEndDate,
+                    tripTime
                 )
             } else {
                 Tasks.forException(tasks.exception ?: Exception("Unknown error"))
@@ -240,6 +242,11 @@ class FirebaseService : Service() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
+    fun updateTripTime(tripId: String, time: LocalTime): Task<Void> {
+        return tripsService.updateTripTime(tripId, time)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     fun makeTripRecurring(tripId: String, recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek, recurringEndDate: LocalDate): Task<Void> {
         return tripsService.makeTripRecurring(tripId, recurringDayOfTheWeek, recurringEndDate)
     }
@@ -285,6 +292,15 @@ class FirebaseService : Service() {
     // fetches by start filter by default, set to false to fetch by end coordinates
     fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, fetchByStart: Boolean = true): Task<MutableList<DocumentSnapshot>> {
         return tripsService.fetchTripsByLocation(latitude, longitude, radiusInKm, fetchByStart)
+    }
+
+
+    fun addPassenger(tripId: String, newPassengerId: String): Task<Void> {
+        return tripsService.addPassenger(tripId, newPassengerId)
+    }
+
+    fun removePassenger(tripId: String, passengerId: String): Task<Void> {
+        return tripsService.addPassenger(tripId, passengerId)
     }
 
 }
