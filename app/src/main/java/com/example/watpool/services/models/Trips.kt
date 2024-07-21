@@ -20,7 +20,8 @@ data class Trips (
     val maxPassengers: String = "",
     val isRecurring: Boolean = false,
     val recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY,
-    val recurringEndDate: LocalDate = LocalDate.now()
+    val recurringEndDate: LocalDate = LocalDate.now(),
+    val timeString: String = ""
 
 )
 
