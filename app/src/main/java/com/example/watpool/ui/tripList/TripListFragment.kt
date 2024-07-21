@@ -178,9 +178,7 @@ class TripListFragment : Fragment() {
 
             // Fetch trips once the service is connected
             firebaseService?.let {
-                //val riderId = it.currentUser()
-                val riderId = "user_id_1"
-                tripListViewModel.fetchConfirmedTrips(it, riderId)
+                tripListViewModel.fetchConfirmedTrips(it)
             }
         }
 
