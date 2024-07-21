@@ -18,6 +18,7 @@ import com.example.watpool.services.interfaces.TripsService
 import com.example.watpool.services.interfaces.UserService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.models.TripConfirmationDetails
+import com.example.watpool.ui.profile.UserDetails
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.maps.model.LatLng
@@ -27,9 +28,12 @@ import com.google.firebase.database.database
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -74,8 +78,19 @@ class FirebaseService : Service() {
         return authService.signUp(email, password)
     }
 
-    fun currentUser(): String {
-        return authService.currentUser()
+    fun currentUserFull(): Task<QuerySnapshot> {
+        val user = authService.getCurrentUser()
+
+        if (user == null) {
+            throw Exception("This is unexpected, user should be logged in")
+        }
+
+        return userService.fetchUsersByEmail(user.email ?: "")
+    }
+
+    suspend fun currentUser(): String {
+        return currentUserFull().await().documents[0].getString("id")
+            ?: throw Exception("This is unexpected, user should have id value")
     }
 
     fun fetchUserByDocumentId(id: String): Task<DocumentSnapshot> {
@@ -103,8 +118,8 @@ class FirebaseService : Service() {
     fun fetchUsersById(id: String): Task<QuerySnapshot> {
         return userService.fetchUsersById(id)
     }
-    fun fetchUsersByUsername(email: String) : Task<QuerySnapshot> {
-        return userService.fetchUsersByUsername(email)
+    fun fetchUsersByEmail(email: String) : Task<QuerySnapshot> {
+        return userService.fetchUsersByEmail(email)
     }
     fun createUser(email: String, name: String) : Task<DocumentReference> {
         return userService.createUser(email, name)
