@@ -35,7 +35,7 @@ import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
 import com.example.watpool.services.models.Trips
-import com.example.watpool.services.models.Trips2
+import com.example.watpool.services.models.Postings
 import com.example.watpool.ui.tripList.TripListFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -102,7 +102,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private var endDestinationLocation : String = ""
 
     // Bool to determine which search has focus
-    private var isEndDestinationFocused: Boolean = true
+    private var isEndDestinationFocused: Boolean = false
+    private var isStartDestinationFocused: Boolean = false
+
+    // Determine if prediction in progress so list can go away
+    private var isSelection: Boolean = false
 
     private fun moveMapCamera(location: Location){
         startPlacesFragment.clearList()
@@ -110,11 +114,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
-/*            if(isEndDestinationFocused){
-                endDestinationLocation = locationSearchCoordinate(latLng.latitude, latLng.longitude)
-            } else {
-                startDestinationLocation= locationSearchCoordinate(latLng.latitude, latLng.longitude)
-            }*/
+
         }
 
     }
@@ -147,6 +147,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }*/
 
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -222,17 +228,26 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         startSearchView.isIconified = false
         destinationSearchView.isIconified = false
 
+        startSearchView.clearFocus()
+        destinationSearchView.clearFocus()
+
         // Set search view to selected prediction
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
             if(startSearchView.hasFocus()){
+                isSelection = true
                 startSearchView.setQuery(prediction, true)
                 startDestinationLocation = prediction
                 startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
+                isSelection = false
             }
             if(destinationSearchView.hasFocus()){
+                isSelection = true
                 destinationSearchView.setQuery(prediction, true)
                 endDestinationLocation = prediction
+                startPlacesFragment.clearList()
                 destinationPlacesFragment.clearList()
+                isSelection = false
             }
         })
 
@@ -240,6 +255,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 startPlacesFragment.clearList()
                 destinationPlacesFragment.clearList()
+                startSearchView.clearFocus()
                 query?.let {
                    startDestinationLocation =  locationSearch(it)
                 }
@@ -249,12 +265,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // Check if text is null otherwise get recommendations based on user search
-                if(!newText.isNullOrEmpty()) {
-                    placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
-                        startPlacesFragment.updateList(predictions)
-                    })
-                } else {
-                    startPlacesFragment.clearList()
+                if(!isSelection){
+                    if(!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
+                            startPlacesFragment.updateList(predictions)
+                        })
+                    } else {
+                        startPlacesFragment.clearList()
+                    }
                 }
                 return true
             }
@@ -264,6 +282,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 startPlacesFragment.clearList()
                 destinationPlacesFragment.clearList()
+                destinationSearchView.clearFocus()
                 query?.let {
                     endDestinationLocation = locationSearch(it)
                 }
@@ -272,12 +291,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 // Check if text is null otherwise get recommendations based on user search
-                if(!newText.isNullOrEmpty()) {
-                    placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
-                        startPlacesFragment.updateList(predictions)
-                    })
-                } else {
-                    startPlacesFragment.clearList()
+                if(!isSelection){
+                    if(!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
+                            destinationPlacesFragment.updateList(predictions)
+                        })
+                    } else {
+                        destinationPlacesFragment.clearList()
+                    }
                 }
                 return true
             }
@@ -285,13 +306,19 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         val createButton: MaterialButton = binding.btnCreate
         createButton.setOnClickListener {
-            val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment(startDestinationLocation, endDestinationLocation)
-            findNavController().navigate(action)
+            createTrip()
         }
 
         initializeMap()
         return root
     }
+
+    private fun createTrip(){
+        val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment(startDestinationLocation, endDestinationLocation)
+        placesViewModel.clearSelectedPrediction()
+        findNavController().navigate(action)
+    }
+
     private fun drawRadius(){
         val cameraPosition = map?.cameraPosition?.target
         cameraPosition?.let {
@@ -329,16 +356,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
 
             }
-            /*googleMap.setOnCameraMoveCanceledListener {
-                val cameraPosition = map?.cameraPosition?.target
-                cameraPosition?.let {
-                    if(isEndDestinationFocused){
-                        endDestinationLocation = locationSearchCoordinate(it.latitude, it.longitude)
-                    } else {
-                        startDestinationLocation= locationSearchCoordinate(it.latitude, it.longitude)
-                    }
-                }
-            }*/
         }
     }
     override fun onMapReady(p0: GoogleMap) {
@@ -394,8 +411,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-
-    // TODO: cleanup location connection to use location service data properly
     // Create service connection to get location data to maps
     private val locationConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -421,7 +436,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             // Bind to LocationService, uses Bind_Auto_create to create service if it does not exist
-            // TODO: Take binding out of specific functions and make it its own private function
             val serviceIntent = Intent(requireContext(), LocationService::class.java)
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
         } else {
@@ -429,7 +443,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    // TODO: Possibly make permission manager so dont need to handle it all in one fragment
     // Check if location permissions are granted
     private fun arePermissionsGranted(): Boolean {
         return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||

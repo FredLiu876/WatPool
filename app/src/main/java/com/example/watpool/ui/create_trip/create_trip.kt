@@ -11,6 +11,7 @@ import android.content.ServiceConnection
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -46,6 +47,7 @@ class create_trip : Fragment() {
     private lateinit var pickTimeBtn: Button
     private lateinit var selectedTimeTV: TextView
     private lateinit var createTripBtn: Button
+    private lateinit var backBtn: Button
 
     private lateinit var pickupSearchView: SearchView
     private lateinit var pickupPlacesFragment: PlacesFragment
@@ -56,11 +58,6 @@ class create_trip : Fragment() {
     private var firebaseService: FirebaseService? = null
     private var firebaseBound: Boolean = false
 
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -94,41 +91,60 @@ class create_trip : Fragment() {
         pickTimeBtn = binding.idBtnPickTime
         selectedTimeTV = binding.idTVSelectedTime
         createTripBtn = binding.createTripBtn
+        backBtn = binding.createTripBackBtn
+
+        backBtn.visibility = View.INVISIBLE
 
         pickupSearchView = binding.pickupLocation
         pickupSearchView.setQueryHint("Enter pickup location");
         pickupSearchView.isIconified = false
+        pickupSearchView.clearFocus()
 
         destinationSearchView = binding.destination
         destinationSearchView.setQueryHint("Enter destination");
         destinationSearchView.isIconified = false
+        destinationSearchView.clearFocus()
 
-        arguments?.let {
-            viewModel.setDestination(create_tripArgs.fromBundle(it).endDestination)
-            viewModel.setPickupLocation(create_tripArgs.fromBundle(it).startDestination)
-            destinationSearchView.setQuery(create_tripArgs.fromBundle(it).endDestination, false)
-            pickupSearchView.setQuery(create_tripArgs.fromBundle(it).startDestination, false)
-        }
 
 
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
             if (pickupSearchView.hasFocus()) {
                 isSelectionInProgress = true
                 pickupSearchView.setQuery(prediction, false)
+                Log.e("Create Trip", "start: " + prediction)
                 pickupPlacesFragment.clearList()
                 isSelectionInProgress = false
+
             }
-            if (destinationSearchView.hasFocus()) {
+            if (destinationSearchView.hasFocus() ) {
                 isSelectionInProgress = true
                 destinationSearchView.setQuery(prediction, false)
+                Log.e("Create Trip", "End: " + prediction)
                 destinationPlacesFragment.clearList()
                 isSelectionInProgress = false
             }
         })
 
+        arguments?.let {
+            val start = create_tripArgs.fromBundle(it).startDestination
+            val end = create_tripArgs.fromBundle(it).endDestination
+            if (!start.isEmpty() && !end.isEmpty()){
+                backBtn.visibility= View.VISIBLE
+            }
+            pickupSearchView.setQuery(start, false)
+            destinationSearchView.setQuery(end, false)
+
+            viewModel.setPickupLocation(start)
+            viewModel.setDestination(end)
+        }
+
+        backBtn.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
         pickupSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                pickupPlacesFragment.clearList()
+                pickupSearchView.clearFocus()
                 return false
             }
 
@@ -136,7 +152,7 @@ class create_trip : Fragment() {
                 // Saves pickup location if any change is made to the field
                 newText?.let { viewModel.setPickupLocation(it) }
 
-                if (!isSelectionInProgress) {
+                if (!isSelectionInProgress ) {
                     if (!newText.isNullOrEmpty()) {
                         placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner) { predictions ->
                             pickupPlacesFragment.updateList(predictions)
@@ -151,7 +167,7 @@ class create_trip : Fragment() {
 
         destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                destinationPlacesFragment.clearList()
+                destinationSearchView.clearFocus()
                 return false
             }
 
@@ -237,7 +253,7 @@ class create_trip : Fragment() {
             }
         })
 
-        pickupSearchView.requestFocus()
+
     }
 
     override fun onStart() {

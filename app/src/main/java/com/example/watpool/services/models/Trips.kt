@@ -40,7 +40,7 @@ data class MyLatLng(
     }
 }
 @RequiresApi(Build.VERSION_CODES.O)
-data class Trips2 (
+data class Postings (
     @get:PropertyName("id")
     @set:PropertyName("id")
     var id: String = "",

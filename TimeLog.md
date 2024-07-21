@@ -1,13 +1,19 @@
 # Time Log
 
-| Domenico      | Time | Task                                   |
-|---------------|------|----------------------------------------|
-| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback         |
-| June 12, 2024 | 1    | Added Google Maps Integration          |
-| June 20, 2024 | 4    | Added Location Service and updated map |
-| June 20, 2024 | 3    | Added Search Address                   |
-| June 20, 2024 | 3    | Added Radius Search and updated map    |
-| June 20, 2024 | 0.5  | Integrated radius search with db       |
+| Domenico      | Time | Task                                                                    |
+|---------------|------|-------------------------------------------------------------------------|
+| June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                          |
+| June 12, 2024 | 1    | Added Google Maps Integration                                           |
+| June 20, 2024 | 4    | Added Location Service and updated map                                  |
+| June 20, 2024 | 3    | Added Search Address                                                    |
+| June 20, 2024 | 3    | Added Radius Search and updated map                                     |
+| June 20, 2024 | 0.5  | Integrated radius search with db                                        |
+| July 15, 2024 | 1    | Cleaned up unused demo code                                             |
+| July 15, 2024 | 1    | Clean Places fragment usage to prevent showing list when not needed     |
+| July 20, 2024 | 3    | Link and debug maps to Create Trip Page                                 |
+| July 20, 2024 | 2    | Debug Firebase Trips Service to return trips in radius                  |
+| July 20, 2024 | 2    | Make data class to deserialize trip object from fetch by location calls |
+
 
 | James         | Time | Task                                       |
 |---------------|------|--------------------------------------------|
