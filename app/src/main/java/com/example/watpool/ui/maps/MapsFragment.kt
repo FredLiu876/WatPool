@@ -19,6 +19,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -139,7 +140,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         super.onResume()
         startPlacesFragment.clearList()
         destinationPlacesFragment.clearList()
+        startSearchView.setQuery("", true)
+        destinationSearchView.setQuery("", true)
     }
+
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
@@ -307,7 +312,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     private fun createTrip(){
         val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment(startDestinationLocation, endDestinationLocation)
-        placesViewModel.clearSelectedPrediction()
+        startPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
+        startPlacesFragment.onDestroy()
+        destinationPlacesFragment.onDestroy()
         findNavController().navigate(action)
     }
 

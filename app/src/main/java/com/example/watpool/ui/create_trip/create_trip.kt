@@ -167,7 +167,7 @@ class create_trip : Fragment() {
         arguments?.let {
             val start = create_tripArgs.fromBundle(it).startDestination
             val end = create_tripArgs.fromBundle(it).endDestination
-            if (!start.isEmpty() && !end.isEmpty()){
+            if (start.isNotEmpty() && end.isNotEmpty()){
                 backBtn.visibility= View.VISIBLE
             }
             pickupSearchView.setQuery(start, false)
@@ -178,6 +178,8 @@ class create_trip : Fragment() {
         }
 
         backBtn.setOnClickListener {
+            pickupPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
             findNavController().popBackStack()
         }
 
@@ -283,7 +285,7 @@ class create_trip : Fragment() {
             Toast.makeText(context, status, Toast.LENGTH_LONG).show()
             if (status.startsWith("Trip created successfully")) {
                 resetSearchViews()
-                viewModel.onCreateTrip(findNavController())
+               // viewModel.onCreateTrip(findNavController())
                 viewModel.resetTripCreationStatus()
             }
 
@@ -324,7 +326,13 @@ class create_trip : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        resetSearchViews()
+        arguments?.let {
+            val start = create_tripArgs.fromBundle(it).startDestination
+            val end = create_tripArgs.fromBundle(it).endDestination
+            if (start.isEmpty() && end.isEmpty()){
+                resetSearchViews()
+            }
+        }
     }
 
     private fun resetSearchViews() {
