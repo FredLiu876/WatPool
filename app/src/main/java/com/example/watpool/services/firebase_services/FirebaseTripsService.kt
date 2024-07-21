@@ -17,6 +17,8 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
 import java.time.LocalDate
 import java.util.UUID
+import com.google.firebase.firestore.FieldValue
+import java.time.LocalTime
 
 class FirebaseTripsService: TripsService {
     private val database = Firebase.firestore
@@ -44,6 +46,7 @@ class FirebaseTripsService: TripsService {
         recurringEndDate: LocalDate,
         timeString: String
     ): Task<DocumentReference> {
+
         val id: String = UUID.randomUUID().toString()
         val trip = hashMapOf(
             "id" to id,
@@ -52,6 +55,7 @@ class FirebaseTripsService: TripsService {
             "max_passengers" to maxPassengers,
             "is_recurring" to isRecurring,
             "trip_date" to tripDate.toString(),
+            "trip_time" to tripTime.toString(),
             "driver_id" to driverId,
             "start_geohash" to startGeohash,
             "end_geohash" to endGeohash,
@@ -68,7 +72,7 @@ class FirebaseTripsService: TripsService {
 
     // rider requesting new ride
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate): Task<DocumentReference> {
+    override fun createTripPosting(userId: String, startingCoordinateId: String, endingCoordinateId: String, startGeohash: String, endGeohash: String, tripDate: LocalDate, isRecurring: Boolean, recurringDayOfTheWeek: DayOfTheWeek, recurringEndDate: LocalDate, tripTime: LocalTime): Task<DocumentReference> {
         val id: String = UUID.randomUUID().toString()
         val trip = hashMapOf(
             "id" to id,
@@ -76,6 +80,7 @@ class FirebaseTripsService: TripsService {
             "ending_coordinate" to endingCoordinateId,
             "is_recurring" to isRecurring,
             "trip_date" to tripDate.toString(),
+            "trip_time" to tripTime.toString(),
             "passengers" to listOf<String>(userId),
             "start_geohash" to startGeohash,
             "end_geohash" to endGeohash
@@ -171,6 +176,22 @@ class FirebaseTripsService: TripsService {
         return tripUpdate(tripId, tripUpdate)
     }
 
+    override fun addPassenger(tripId: String, newPassengerId: String): Task<Void> {
+        val tripUpdate = hashMapOf(
+            "passengers" to FieldValue.arrayUnion(newPassengerId)
+        )
+
+        return tripUpdate(tripId, tripUpdate)
+    }
+
+    override fun removePassenger(tripId: String, passengerId: String): Task<Void> {
+        val tripUpdate = hashMapOf(
+            "passengers" to FieldValue.arrayRemove(passengerId)
+        )
+
+        return tripUpdate(tripId, tripUpdate)
+    }
+
     // update date
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -182,6 +203,13 @@ class FirebaseTripsService: TripsService {
             "trip_date" to date.toString()
         )
 
+        return tripUpdate(tripId, tripUpdate)
+    }
+
+    override fun updateTripTime(tripId: String, time: LocalTime): Task<Void> {
+        val tripUpdate = hashMapOf(
+            "trip_time" to time.toString()
+        )
         return tripUpdate(tripId, tripUpdate)
     }
 
@@ -257,6 +285,12 @@ class FirebaseTripsService: TripsService {
                                         val distanceInM =
                                             GeoFireUtils.getDistanceBetween(docLocation, center)
                                         if (distanceInM <= radiusInM) {
+                                            doc.reference.update(
+                                                mapOf(
+                                                    "latitude" to tripLat,
+                                                    "longitude" to tripLng
+                                                )
+                                            )
                                             matchingDocs.add(doc)
                                         }
                                     }
@@ -272,11 +306,11 @@ class FirebaseTripsService: TripsService {
 
                 }
 
-                // return@continueWith
+
                 Tasks.whenAll(coordTasks).continueWith { _ ->
                     Log.d(
                         "Trip Fetch",
-                        "Returning all trips by location"
+                        "Returning all trips by location "
                     )
                     matchingDocs
                 }.result
