@@ -145,6 +145,7 @@ class create_trip : Fragment() {
         pickupSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 pickupSearchView.clearFocus()
+                pickupPlacesFragment.clearList()
                 return false
             }
 
@@ -168,6 +169,7 @@ class create_trip : Fragment() {
         destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 destinationSearchView.clearFocus()
+                destinationPlacesFragment.clearList()
                 return false
             }
 
