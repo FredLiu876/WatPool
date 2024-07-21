@@ -20,6 +20,6 @@ data class Trips (
     val isRecurring: Boolean = false,
     val recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY,
     val recurringEndDate: LocalDate = LocalDate.now(),
-    val tripTime: String = ""
+    val timeString: String = ""
 
 )
