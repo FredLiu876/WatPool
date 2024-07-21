@@ -59,6 +59,9 @@ class CreateTripViewModel : ViewModel() {
     private var _selectedCalendar = MutableLiveData<Calendar>()
     val selectedCalendar: LiveData<Calendar> = _selectedCalendar
 
+    private var _tripCreatedSuccessfully = MutableLiveData<Boolean>()
+    val tripCreatedSuccessfully: LiveData<Boolean> get() = _tripCreatedSuccessfully
+
     init {
         _selectedCalendar.value = Calendar.getInstance()
     }
@@ -188,8 +191,8 @@ class CreateTripViewModel : ViewModel() {
 
                 val result = if (isRecurring) {
                     val recurringDayOfTheWeek = getRecurringDay(_recurringDays.value!!)
-
-                    firebaseService.createTrip(
+                    val recurringEndDate = LocalDate.parse(recurringEndDate.value!!, dateFormatter)
+                    val result = firebaseService.createTrip(
                         driverId,
                         startLatitude,
                         endLatitude,
@@ -200,11 +203,23 @@ class CreateTripViewModel : ViewModel() {
                         tripDate,
                         maxPassengers,
                         isRecurring,
-                        recurringDayOfTheWeek
+                        recurringDayOfTheWeek,
+                        recurringEndDate
                     ).await()
+
+                    Log.d("CreateTripViewModel", "Recurring Trip Created:")
+                    Log.d("CreateTripViewModel", "Pickup Location: $startLocation")
+                    Log.d("CreateTripViewModel", "Destination: $endLocation")
+                    Log.d("CreateTripViewModel", "Selected Date: ${tripDate.format(dateFormatter)}")
+                    Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
+                    Log.d("CreateTripViewModel", "Number of Available Seats: $maxPassengers")
+                    Log.d("CreateTripViewModel", "Recurring Day: $recurringDayOfTheWeek")
+                    Log.d("CreateTripViewModel", "Recurring End Date: ${recurringEndDate.format(dateFormatter)}")
+
+                    result
                 }
                 else {
-                    firebaseService.createTrip(
+                    val result = firebaseService.createTrip(
                         driverId,
                         startLatitude,
                         endLatitude,
@@ -215,10 +230,20 @@ class CreateTripViewModel : ViewModel() {
                         tripDate,
                         maxPassengers
                     ).await()
+
+                    Log.d("CreateTripViewModel", "Non-Recurring Trip Created:")
+                    Log.d("CreateTripViewModel", "Pickup Location: $startLocation")
+                    Log.d("CreateTripViewModel", "Destination: $endLocation")
+                    Log.d("CreateTripViewModel", "Selected Date: ${tripDate.format(dateFormatter)}")
+                    Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
+                    Log.d("CreateTripViewModel", "Number of Available Seats: $maxPassengers")
+
+                    result
                 }
 
                 result.addOnSuccessListener { documentReference ->
                     _tripCreationStatus.postValue("Trip created successfully with ID: ${documentReference.id}")
+                    _tripCreatedSuccessfully.postValue(true)
                 }.addOnFailureListener { e ->
                     _tripCreationStatus.postValue("Error creating trip: ${e.message}")
                 }
@@ -233,14 +258,7 @@ class CreateTripViewModel : ViewModel() {
                 Log.e("CreateTripViewModel","Error creating trip: ${e.message}")
             }
         }
-
-            // logged data can be seen in Logcat tab
-            Log.d("CreateTripViewModel", "Pickup Location: ${_pickupLocation.value}")
-            Log.d("CreateTripViewModel", "Destination: ${_destination.value}")
-            Log.d("CreateTripViewModel", "Selected Date: ${_selectedDate.value}")
-            Log.d("CreateTripViewModel", "Selected Time: ${_selectedTime.value}")
-            Log.d("CreateTripViewModel", "Number of Available Seats: ${_numAvailableSeats.value}")
-        }
+    }
 
     // Used for debugging to make sure that trips are being added correctly
     fun fetchTripsForCurrentUser(firebaseService: FirebaseService) {
