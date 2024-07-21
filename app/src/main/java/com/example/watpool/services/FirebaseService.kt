@@ -178,14 +178,30 @@ class FirebaseService : Service() {
 
                             Tasks.whenAllComplete(
                                 coordinateService.fetchCoordinatesById(startCoordinateId),
-                                coordinateService.fetchCoordinatesById(endCoordinateId)
+                                coordinateService.fetchCoordinatesById(endCoordinateId),
+                                coordinateService.fetchCoordinatesByDocumentId(startCoordinateId),
+                                coordinateService.fetchCoordinatesByDocumentId(endCoordinateId)
                             ).continueWith { coordTasks ->
-                                val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
-                                val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
-                                val startLatitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
-                                val startLongitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
-                                val endLatitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
-                                val endLongitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                var startDoc = if ((coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull() != null) {
+                                    (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()
+                                } else {
+                                    (coordTasks.result[2].result as? QuerySnapshot)?.documents?.firstOrNull()
+                                }
+
+                                var endDoc = if ((coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull() != null) {
+                                    (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()
+                                } else {
+                                    (coordTasks.result[3].result as? QuerySnapshot)?.documents?.firstOrNull()
+                                }
+
+                                val startLocation = startDoc?.getString("location") ?: ""
+                                val endLocation = endDoc?.getString("location") ?: ""
+
+                                val startLatitude = startDoc?.getDouble("latitude") ?: 0.0
+                                val startLongitude = startDoc?.getDouble("longitude") ?: 0.0
+
+                                val endLatitude = endDoc?.getDouble("latitude") ?: 0.0
+                                val endLongitude = endDoc?.getDouble("longitude") ?: 0.0
                                 document.reference.update(
                                     mapOf(
                                         "to" to startLocation,
