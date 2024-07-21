@@ -106,7 +106,7 @@ class SignUpFragment : Fragment() {
     private fun handleSignUpResult(user: FirebaseUser?) {
         if (user != null) {
             // Handle successful registration
-            findNavController().navigate(R.id.navigation_dashboard)
+            findNavController().navigate(R.id.navigation_profile)
         }
     }
 

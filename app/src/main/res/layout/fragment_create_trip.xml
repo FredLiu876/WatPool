@@ -11,7 +11,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        tools:ignore="MissingConstraints,UselessParent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/pickup_location"
@@ -25,8 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:elevation="5dp"
-            />
+            android:elevation="5dp" />
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/destination"
@@ -40,8 +41,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:elevation="5dp"
-            />
+            android:elevation="5dp" />
+
+        <EditText
+            android:id="@+id/numAvailableSeats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="Enter # of available seats"
+            android:inputType="text"
+            android:padding="10dp"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/idTVSelectedDate"
@@ -52,7 +62,7 @@
             android:text="Date"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
@@ -73,7 +83,7 @@
             android:text="Time"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText" />
 
@@ -85,21 +95,131 @@
             android:textAllCaps="false"
             tools:ignore="HardcodedText" />
 
-        <EditText
-            android:id="@+id/numAvailableSeats"
+        <Switch
+            android:id="@+id/recurringSwitch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints=""
-            android:hint="Enter # of available seats"
-            android:inputType="text"
-            android:padding="15dp"
-            tools:ignore="HardcodedText" />
+            android:text="Make Recurring"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:padding="10dp" />
+
+        <LinearLayout
+            android:id="@+id/recurringOptionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="10dp">
+
+                <ToggleButton
+                    android:id="@+id/sundayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="S"
+                    android:textOff="S"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/mondayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="M"
+                    android:textOff="M"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/tuesdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="T"
+                    android:textOff="T"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/wednesdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="W"
+                    android:textOff="W"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/thursdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="T"
+                    android:textOff="T"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/fridayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="F"
+                    android:textOff="F"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+
+                <ToggleButton
+                    android:id="@+id/saturdayToggle"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/day_selector_background"
+                    android:textOn="S"
+                    android:textOff="S"
+                    android:textColor="@color/on_background"
+                    android:textSize="16sp"
+                    android:layout_margin="4dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/recurringEndDateTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recurring End Date"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:padding="10dp"/>
+
+            <Spinner
+                android:id="@+id/recurringEndDateSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/createTripBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             android:text="Create Trip"
             tools:ignore="HardcodedText" />
 
