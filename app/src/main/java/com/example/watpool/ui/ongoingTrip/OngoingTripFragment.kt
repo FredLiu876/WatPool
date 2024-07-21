@@ -18,18 +18,21 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RatingBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentOngoingTripBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.LocationService
 import com.example.watpool.services.models.Trips
 import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
+import com.example.watpool.ui.tripList.TripDetailFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -109,6 +112,13 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    fun latLngToLocation(latLng: LatLng): Location {
+        val location = Location("")
+        location.latitude = latLng.latitude
+        location.longitude = latLng.longitude
+        return location
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -132,7 +142,18 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
         }
 
+        // back button
+        val buttonBack: MaterialButton = binding.back
+        buttonBack.setOnClickListener {
+            val action = OngoingTripFragmentDirections.actionOngoingTripFragmentToTripListFragment2()
+            findNavController().navigate(action)
+        }
+
+        // start and end trip button
         val buttonStartTrip: MaterialButton = binding.findRoute
+        val buttonEndTrip: MaterialButton = binding.endTrip
+
+        // start trip listener
         buttonStartTrip.setOnClickListener {
             // Fetch and draw the route once the map is ready
             val results = FloatArray(1)
@@ -150,12 +171,39 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
                 textViewDistanceRemain.visibility = View.VISIBLE
                 buttonSafety.visibility = View.VISIBLE
                 buttonStartTrip.visibility = View.GONE
+                buttonEndTrip.visibility = View.VISIBLE
             } else {
                 AlertDialog.Builder(requireContext())
                     .setTitle("Warning")
                     .setMessage("You are not within $offRouteThreshold meters of trip start location. Please move closer to the start location shown on map.")
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
+                isCenteredOnUser = false
+                moveMapCamera(latLngToLocation(tripOrigin))
+            }
+        }
+
+        // end trip listener
+        buttonEndTrip.setOnClickListener {
+            val results = FloatArray(1)
+            userLocation?.let { loc ->
+                Location.distanceBetween(
+                    loc.latitude, loc.longitude,
+                    tripDestination.latitude, tripDestination.longitude,
+                    results
+                )
+            }
+            if (results[0] <= offRouteThreshold) {
+                stopOffRouteMonitoring()
+                showRatingDialog()
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Warning")
+                    .setMessage("You are not within $offRouteThreshold meters of trip end location. Please move closer to the end location shown on map.")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+                isCenteredOnUser = false
+                moveMapCamera(latLngToLocation(tripDestination))
             }
         }
 
@@ -440,6 +488,34 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
             callIntent.data = Uri.parse("tel:123-456-7890")
             startActivity(callIntent)
         }
+    }
+
+    // show rating popup
+    private fun showRatingDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.popup_end_trip, null)
+        val ratingBar = dialogView.findViewById<RatingBar>(R.id.ratingBar)
+        val submitButton = dialogView.findViewById<MaterialButton>(R.id.submitRatingButton)
+        val skipButton = dialogView.findViewById<MaterialButton>(R.id.skipRatingButton)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        submitButton.setOnClickListener {
+            val rating = ratingBar.rating
+            // Handle rating submission
+            dialog.dismiss()
+            val action = OngoingTripFragmentDirections.actionOngoingTripFragmentToTripListFragment2()
+            findNavController().navigate(action)
+        }
+
+        skipButton.setOnClickListener {
+            dialog.dismiss()
+            val action = OngoingTripFragmentDirections.actionOngoingTripFragmentToTripListFragment2()
+            findNavController().navigate(action)
+        }
+
+        dialog.show()
     }
 
     // Find route

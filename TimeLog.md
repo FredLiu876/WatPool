@@ -19,6 +19,7 @@
 | July 15, 2024 | 3    | Add off-route detection                    |
 | July 18, 2024 | 5    | Change theme and refactor start trip       |
 | July 19, 2024 | 5    | Use trip id to find start and end location |
+| July 19, 2024 | 4    | Add end trip and fix app navigation        |
 
 | Fred          | Time | Task                                                                                           |
 |---------------|------|------------------------------------------------------------------------------------------------|
