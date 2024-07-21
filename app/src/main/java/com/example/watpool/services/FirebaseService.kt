@@ -127,7 +127,7 @@ class FirebaseService : Service() {
         isRecurring: Boolean = false,
         recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY,
         recurringEndDate: LocalDate = LocalDate.now(),
-        timeString: String
+        tripTime: LocalTime
     ): Task<Task<DocumentReference>> {
         return Tasks.whenAllComplete(
             coordinateService.addCoordinate(driverId, startLatitude, startLongitude, startLocation),
@@ -149,7 +149,7 @@ class FirebaseService : Service() {
                     isRecurring,
                     recurringDayOfTheWeek,
                     recurringEndDate,
-                    timeString
+                    tripTime
                 )
             } else {
                 Tasks.forException(tasks.exception ?: Exception("Unknown error"))

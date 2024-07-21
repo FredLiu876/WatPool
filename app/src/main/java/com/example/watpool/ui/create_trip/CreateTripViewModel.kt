@@ -20,7 +20,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
+import java.time.LocalTime
 import java.util.Calendar
+import java.util.Locale
 
 class CreateTripViewModel : ViewModel() {
 
@@ -179,6 +181,7 @@ class CreateTripViewModel : ViewModel() {
                 val maxPassengers = _numAvailableSeats.value ?: "0"
 
                 val timeString = _selectedTime.value ?: ""
+                val tripTime = parseTimeString(timeString)
 
                 val isRecurring = _isRecurring.value ?: false
 
@@ -198,7 +201,7 @@ class CreateTripViewModel : ViewModel() {
                         isRecurring,
                         recurringDayOfTheWeek,
                         recurringEndDate,
-                        timeString
+                        tripTime
                     ).await()
                 } else {
                     firebaseService.createTrip(
@@ -211,7 +214,7 @@ class CreateTripViewModel : ViewModel() {
                         endLocation,
                         tripDate,
                         maxPassengers,
-                        timeString = timeString
+                        tripTime = tripTime
                     ).await()
                 }
 
@@ -287,5 +290,11 @@ class CreateTripViewModel : ViewModel() {
     fun clearSearchViewData() {
         _pickupLocation.value = ""
         _destination.value = ""
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun parseTimeString(timeString: String): LocalTime {
+        val formatter = DateTimeFormatter.ofPattern("h:mm a", Locale.US)
+        return LocalTime.parse(timeString, formatter)
     }
 }
