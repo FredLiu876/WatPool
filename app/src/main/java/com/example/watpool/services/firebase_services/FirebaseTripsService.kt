@@ -293,16 +293,11 @@ class FirebaseTripsService: TripsService {
 
                 }
 
-                // return@continueWith
 
-                Log.d(
-                    "Trip Fetch",
-                    "Task collection "
-                )
                 Tasks.whenAll(coordTasks).continueWith { _ ->
                     Log.d(
                         "Trip Fetch",
-                        "Returning all trips by location " + matchingDocs.toString()
+                        "Returning all trips by location "
                     )
                     matchingDocs
                 }.result
