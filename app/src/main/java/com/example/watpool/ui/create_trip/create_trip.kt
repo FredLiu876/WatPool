@@ -103,6 +103,13 @@ class create_trip : Fragment() {
         destinationSearchView.setQueryHint("Enter destination");
         destinationSearchView.isIconified = false
 
+        arguments?.let {
+            viewModel.setDestination(create_tripArgs.fromBundle(it).endDestination)
+            viewModel.setPickupLocation(create_tripArgs.fromBundle(it).startDestination)
+            destinationSearchView.setQuery(create_tripArgs.fromBundle(it).endDestination, false)
+            pickupSearchView.setQuery(create_tripArgs.fromBundle(it).startDestination, false)
+        }
+
 
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
             if (pickupSearchView.hasFocus()) {

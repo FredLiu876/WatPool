@@ -17,8 +17,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -99,13 +97,26 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private var startSearchRadius : Double = 1.0
     private var destinationSearchRadius : Double = 1.0
 
+    // Current destination of search views
+    private var startDestinationLocation : String = ""
+    private var endDestinationLocation : String = ""
+
+    // Bool to determine which search has focus
+    private var isEndDestinationFocused: Boolean = true
+
     private fun moveMapCamera(location: Location){
         startPlacesFragment.clearList()
         destinationPlacesFragment.clearList()
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+/*            if(isEndDestinationFocused){
+                endDestinationLocation = locationSearchCoordinate(latLng.latitude, latLng.longitude)
+            } else {
+                startDestinationLocation= locationSearchCoordinate(latLng.latitude, latLng.longitude)
+            }*/
         }
+
     }
     @RequiresApi(Build.VERSION_CODES.O)
     private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
@@ -173,11 +184,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         }
 
-        val createButton: MaterialButton = binding.btnCreate
-        createButton.setOnClickListener {
-            val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment("Waterloo", "Toronto")
-            findNavController().navigate(action)
-        }
+
 
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
@@ -215,25 +222,28 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         startSearchView.isIconified = false
         destinationSearchView.isIconified = false
 
-        // TODO: clear predictions after selected item
         // Set search view to selected prediction
         placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
             if(startSearchView.hasFocus()){
                 startSearchView.setQuery(prediction, true)
+                startDestinationLocation = prediction
                 startPlacesFragment.clearList()
             }
             if(destinationSearchView.hasFocus()){
                 destinationSearchView.setQuery(prediction, true)
+                endDestinationLocation = prediction
                 destinationPlacesFragment.clearList()
             }
-
         })
 
         startSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
                 startPlacesFragment.clearList()
                 destinationPlacesFragment.clearList()
-                query?.let { locationSearch(it) }
+                query?.let {
+                   startDestinationLocation =  locationSearch(it)
+                }
+
                 return false
             }
 
@@ -254,7 +264,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 startPlacesFragment.clearList()
                 destinationPlacesFragment.clearList()
-                query?.let { locationSearch(it) }
+                query?.let {
+                    endDestinationLocation = locationSearch(it)
+                }
                 return false
             }
 
@@ -271,10 +283,15 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
+        val createButton: MaterialButton = binding.btnCreate
+        createButton.setOnClickListener {
+            val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment(startDestinationLocation, endDestinationLocation)
+            findNavController().navigate(action)
+        }
+
         initializeMap()
         return root
     }
-
     private fun drawRadius(){
         val cameraPosition = map?.cameraPosition?.target
         cameraPosition?.let {
@@ -308,8 +325,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
             googleMap.setOnCameraIdleListener {
-                    drawRadius()
+                drawRadius()
+
+
             }
+            /*googleMap.setOnCameraMoveCanceledListener {
+                val cameraPosition = map?.cameraPosition?.target
+                cameraPosition?.let {
+                    if(isEndDestinationFocused){
+                        endDestinationLocation = locationSearchCoordinate(it.latitude, it.longitude)
+                    } else {
+                        startDestinationLocation= locationSearchCoordinate(it.latitude, it.longitude)
+                    }
+                }
+            }*/
         }
     }
     override fun onMapReady(p0: GoogleMap) {
@@ -418,7 +447,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     }
 
     // Search for location using geocoder
-    private fun locationSearch(location: String){
+    private fun locationSearch(location: String) : String{
         // locale.getdefault gets users deafult language and other preferences
         // Use requireContext() to ensure context is not null
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
@@ -433,11 +462,36 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 map?.clear()
                 map?.addMarker(MarkerOptions().position(latLng).title(location))
                 map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+                return address.getAddressLine(0)
             } else {
                 Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+                return ""
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            return ""
+        }
+    }
+
+    private fun locationSearchCoordinate(lat: Double, lng: Double): String{
+        // locale.getdefault gets users deafult language and other preferences
+        // Use requireContext() to ensure context is not null
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            // Using deprecated function because newer version does not work with out min sdk setup
+            // If min sdk updated replace with geocoder listener setup in android documentation
+            val addressList = geocoder.getFromLocation(lat, lng, 5)
+            if (!addressList.isNullOrEmpty()) {
+                val address = addressList[0]
+                // Clear map so that old markers dont remain when moving across the map
+                return address.getAddressLine(0)
+            } else {
+                Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+                return ""
+            }
+        } catch (e: IOException) {
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            return ""
         }
     }
 }
