@@ -80,6 +80,8 @@ data class Postings (
     @get:PropertyName("startLatLng")
     @set:PropertyName("startLatLng")
     var startLatLng: MyLatLng = MyLatLng(),
+    var startCoords: Coordinate = Coordinate("", 0.0, 0.0, "","",""),
+    var endCoords: Coordinate = Coordinate("", 0.0, 0.0, "","",""),
 )
 
 

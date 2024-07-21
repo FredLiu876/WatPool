@@ -41,4 +41,13 @@ interface TripsService {
 
     fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, startFilter: Boolean): Task<MutableList<DocumentSnapshot>>
 
+    fun fetchTripsByStartEnd(
+        startLatitude: Double,
+        startLongitude: Double,
+        startRadiusInKm: Double,
+        endLatitude: Double,
+        endLongitude: Double,
+        endRadiusInKm: Double
+    ): Task<MutableList<DocumentSnapshot>>
+
 }

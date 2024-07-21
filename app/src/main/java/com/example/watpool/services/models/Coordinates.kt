@@ -6,7 +6,7 @@ data class Coordinate(
     val id: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    val driverId: String = "",
+    val driver_id: String = "",
     val location: String ="",
-    val geoHash: String = ""
+    val geohash: String = ""
 )

@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -36,6 +37,8 @@ import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
 import com.example.watpool.services.models.Trips
 import com.example.watpool.services.models.Postings
+import com.example.watpool.ui.postingList.PostingDetailFragment
+import com.example.watpool.ui.postingList.PostingListFragment
 import com.example.watpool.ui.tripList.TripListFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -73,8 +76,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var startPlacesFragment: PlacesFragment
     private lateinit var destinationPlacesFragment: PlacesFragment
+
+    private lateinit var postingBottomSheet: PostingListFragment
+
     // View Models
-    private val mapsViewModel: MapsViewModel by viewModels()
+    private val mapsViewModel: MapsViewModel by activityViewModels()
     private lateinit var placesViewModel: PlacesViewModel
 
     // Create google map object to be used for modification within fragment
@@ -119,33 +125,13 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
     }
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
-
-        /*val postings = firebaseService?.fetchTripsByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm, false)
-        postings?.addOnSuccessListener { documentSnapshot ->
-            for (document in documentSnapshot) {
-                val dataModel = document.toObject(Trips2::class.java)
-                if(dataModel != null){
-                }
+    private fun fetchPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
+        map?.let {
+            val cameraPosition = it.cameraPosition.target
+            firebaseService?.let {  firebase ->
+                mapsViewModel.fetchPostingsByStartAndEnd(firebase, cameraPosition.latitude, cameraPosition.longitude, radiusInKm, locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
             }
-        }?.addOnFailureListener {
-            Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
-        }*/
-
-
-        /*val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
-        postings?.addOnSuccessListener { documentSnapshot ->
-            for (document in documentSnapshot) {
-                val dataModel = document.toObject(Coordinate::class.java)
-                if (dataModel != null) {
-                    val postLatLng = LatLng(dataModel.latitude, dataModel.longitude)
-                    map?.addMarker(MarkerOptions().position(postLatLng).title(dataModel.id))
-                }
-            }
-        }?.addOnFailureListener {
-            Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
-        }*/
-
+        }
 
     }
 
@@ -190,7 +176,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         }
 
-
+        postingBottomSheet = PostingListFragment()
 
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
@@ -200,8 +186,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             val cameraPosition = map?.cameraPosition?.target
             cameraPosition?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
-                showPostingsInRadius(latLng, startSearchRadius)
+                fetchPostingsInRadius(latLng, startSearchRadius)
             }
+
         }
 
         val sliderLabel : TextView = binding.textRadius
@@ -219,6 +206,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             }
         }
 
+        mapsViewModel.postingsInRadius.observe(viewLifecycleOwner, Observer { postings ->
+            if(postings.isNotEmpty()){
+                postingBottomSheet.show(requireActivity().supportFragmentManager, "SupportBottomSheet")
+            }
+        })
 
         // Top search bar binding and listener
         startSearchView = binding.mapSearchViewStart

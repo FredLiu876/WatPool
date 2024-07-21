@@ -284,7 +284,11 @@ class FirebaseService : Service() {
     // Specify a location and a range to get trips starting / ending within that range
     // fetches by start filter by default, set to false to fetch by end coordinates
     fun fetchTripsByLocation(latitude: Double, longitude: Double, radiusInKm: Double, fetchByStart: Boolean = true): Task<MutableList<DocumentSnapshot>> {
-        return tripsCoordinateConnectorLocation(tripsService.fetchTripsByLocation(latitude, longitude, radiusInKm, fetchByStart))
+        return tripsService.fetchTripsByLocation(latitude, longitude, radiusInKm, fetchByStart)
+    }
+
+    fun fetchTripsByStartAndEnd(latitudeStart: Double, longitudeStart: Double, radiusInKmStart: Double, latitudeEnd: Double, longitudeEnd: Double, radiusInKmEnd: Double): Task<MutableList<DocumentSnapshot>>{
+        return tripsService.fetchTripsByStartEnd(latitudeStart, longitudeStart, radiusInKmStart, latitudeEnd, longitudeEnd, radiusInKmEnd)
     }
 
     fun tripsCoordinateConnectorLocation(task: Task<MutableList<DocumentSnapshot>>): Task<MutableList<DocumentSnapshot>> {
