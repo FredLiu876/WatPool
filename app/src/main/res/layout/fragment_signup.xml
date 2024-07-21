@@ -55,6 +55,8 @@
     <Button
         android:id="@+id/signupButton"
         android:layout_width="match_parent"
+        android:background="@drawable/button_background"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
         android:text="@string/sign_up"/>
 </LinearLayout>

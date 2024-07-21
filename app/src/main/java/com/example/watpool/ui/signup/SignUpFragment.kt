@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +18,6 @@ import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentSignupBinding
 import com.example.watpool.services.FirebaseService
-import com.example.watpool.services.LocationService
 import com.google.firebase.auth.FirebaseUser
 
 class SignUpFragment : Fragment() {
@@ -40,7 +40,7 @@ class SignUpFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSignupBinding.inflate(inflater, container, false)
         return binding.root
@@ -55,8 +55,10 @@ class SignUpFragment : Fragment() {
             val email = binding.email.text.toString()
             val password = binding.password.text.toString()
             val name = binding.name.text.toString()
-            viewModel.registerUser(email, password, name)
-            firebaseService?.createUser(email, name)
+            if (validateInput(email, password, name)) {
+                viewModel.registerUser(email, password, name)
+                firebaseService?.createUser(email, name)
+            }
         }
 
         viewModel.userLiveData.observe(viewLifecycleOwner) { user ->
@@ -77,6 +79,30 @@ class SignUpFragment : Fragment() {
         firebaseBound = true
     }
 
+    private fun validateInput(email: String, password: String, name: String): Boolean {
+        var isValid = true
+        if (TextUtils.isEmpty(email)) {
+            Toast.makeText(context, "Email is required", Toast.LENGTH_SHORT).show()
+            binding.email.text.clear()
+            isValid = false
+        }
+        if (TextUtils.isEmpty(password)) {
+            Toast.makeText(context, "Password is required", Toast.LENGTH_SHORT).show()
+            binding.password.text.clear()
+            isValid = false
+        } else if (password.length < 6) {
+            Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+            binding.password.text.clear()
+            isValid = false
+        }
+        if (TextUtils.isEmpty(name)) {
+            Toast.makeText(context, "Name is required", Toast.LENGTH_SHORT).show()
+            binding.name.text.clear()
+            isValid = false
+        }
+        return isValid
+    }
+
     private fun handleSignUpResult(user: FirebaseUser?) {
         if (user != null) {
             // Handle successful registration
@@ -86,7 +112,7 @@ class SignUpFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if(firebaseBound){
+        if (firebaseBound) {
             requireContext().unbindService(firebaseConnection)
             firebaseBound = false
         }
