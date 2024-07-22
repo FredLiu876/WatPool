@@ -17,6 +17,10 @@
 | July 21, 2024 | 4    | Display posting information in maps fragment using bottom sheet         |
 | July 21, 2024 | 0.5  | Fixed merge bug from maps to create_trip                                |
 | July 21, 2024 | 2    | Confirm Trips from posting details in map fragment                      |
+| July 21, 2024 | 1    | Fix Search bug due to new trip creation functions                       |
+| July 21, 2024 | 6    | Search trips by starting or end depending on search views               |
+| July 22, 2024 | 1    | Testing and prep for final demo on my phone                             |
+
 
 
 | James         | Time | Task                                       |

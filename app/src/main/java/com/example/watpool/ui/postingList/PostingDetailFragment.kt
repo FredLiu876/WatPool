@@ -14,17 +14,29 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.services.FirebaseService
+import com.example.watpool.services.models.Postings
+import com.google.android.gms.maps.model.LatLng
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class PostingDetailFragment : BottomSheetDialogFragment() {
 
     private lateinit var postingId: String
+    private lateinit var tripDate: String
+    private lateinit var to: String
+    private lateinit var from: String
 
-    private val viewModel : PostingListViewModel by viewModels()
+    private lateinit var posting: Postings
+
+    private var startLatLng: LatLng = LatLng(0.0, 0.0)
+    private var endLatLng: LatLng = LatLng(0.0, 0.0)
+
+    private lateinit var viewModel : PostingListViewModel
 
     private var firebaseService: FirebaseService? = null
     private var firebaseBound: Boolean = false
@@ -43,19 +55,24 @@ class PostingDetailFragment : BottomSheetDialogFragment() {
             }
         }
         return inflater.inflate(R.layout.fragment_posting_detail, container, false)
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        viewModel = ViewModelProvider(requireActivity()).get(PostingListViewModel::class.java)
         // Find views
-        val tripIdTextView = view.findViewById<TextView>(R.id.trip_id_text_view)
         val backButton = view.findViewById<Button>(R.id.back_button)
         val joinButton =  view.findViewById<Button>(R.id.join_button)
 
-        // Set the trip ID text
-        tripIdTextView.text = "Trip ID: " + postingId
+        viewModel.postings.observe(viewLifecycleOwner, Observer { posting ->
+            if (posting != null){
+                view.findViewById<TextView>(R.id.to_text_view)?.text = "To: ${posting.to}"
+                view.findViewById<TextView>(R.id.from_text_view)?.text = "From: ${posting.from}"
+                view.findViewById<TextView>(R.id.date_text_view)?.text = "Date: ${posting.tripDate}"
+            }
+        })
 
         backButton.setOnClickListener {
                 dismiss()
@@ -100,6 +117,9 @@ class PostingDetailFragment : BottomSheetDialogFragment() {
             val binder = service as FirebaseService.FirebaseBinder
             firebaseService = binder.getService()
             firebaseBound = true
+            firebaseService?.let {
+                viewModel.getPostingDetails(it, postingId)
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {

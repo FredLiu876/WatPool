@@ -39,7 +39,7 @@ import net.cachapa.expandablelayout.ExpandableLayout
 class PostingListFragment : BottomSheetDialogFragment() {
 
     private val mapsViewModel: MapsViewModel by activityViewModels()
-
+    private val postingListViewModel: PostingListViewModel by viewModels()
     private lateinit var postingDetailFragment : PostingDetailFragment
 
     private var firebaseService: FirebaseService? = null
@@ -84,6 +84,7 @@ class PostingListFragment : BottomSheetDialogFragment() {
                               savedInstanceState: Bundle?): View {
 
         return inflater.inflate(R.layout.fragment_posting_list_dialog, container, false)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -96,7 +97,17 @@ class PostingListFragment : BottomSheetDialogFragment() {
         requireContext().bindService(serviceIntent, firebaseConnection, Context.BIND_AUTO_CREATE)
 
         postingAdapter = PostingAdapter(emptyList()) {posting ->
+            firebaseService?.let {
+                postingListViewModel.getPostingDetails(it,  posting.id)
+            }
             postingDetailFragment.show(childFragmentManager, posting.id)
+            /*postingListViewModel.postings.observe(viewLifecycleOwner, Observer { post ->
+                if(post.to.isNotEmpty()){
+                    Log.e("ListLog", "To " + post.to)
+                    postingDetailFragment.show(childFragmentManager, posting.id)
+                }
+            })*/
+
         }
 
         // Initialize recycler views and adapters

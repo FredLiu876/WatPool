@@ -21,11 +21,10 @@ class PostingAdapter(private var postings: List<Postings>, private val clickList
 
         fun bind(posting: Postings, clickListener: (Postings) -> Unit) {
             val context = itemView.context
-            tripTo.text = context.getString(R.string.to_destination, posting.endCoords.location)
-            tripFrom.text = context.getString(R.string.from_destination, posting.startCoords.location)
+            tripTo.text = context.getString(R.string.to_destination, posting.to)
+            tripFrom.text = context.getString(R.string.from_destination, posting.from)
             tripDriver.text = posting.driverId
             tripDate.text = posting.tripDate
-
             itemView.setOnClickListener { clickListener(posting) }
         }
     }
