@@ -134,12 +134,12 @@ class MapsViewModel: ViewModel() {
                         val dataModel = document.toObject(Postings::class.java)
                         if (dataModel != null) {
                             val startCoordTask = async {
-                                val startSnapshot = firebaseService.fetchCoordinatesByDocumentId(dataModel.startingCoordinateId).await()
-                                startSnapshot.toObject(Coordinate::class.java)
+                                val startSnapshot = firebaseService.fetchCoordinatesById(dataModel.startingCoordinateId).await()
+                                startSnapshot.documents[0].toObject(Coordinate::class.java)
                             }
                             val endCoordTask = async {
-                                val endSnapshot = firebaseService.fetchCoordinatesByDocumentId(dataModel.endingCoordinateId).await()
-                                endSnapshot.toObject(Coordinate::class.java)
+                                val endSnapshot = firebaseService.fetchCoordinatesById(dataModel.endingCoordinateId).await()
+                                endSnapshot.documents[0].toObject(Coordinate::class.java)
                             }
 
                             val startCoord = startCoordTask.await()

@@ -31,6 +31,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.Query
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -223,6 +224,11 @@ class FirebaseService : Service() {
             }
         }
     }
+
+    fun fetchCoordinatesById(id:String): Task<QuerySnapshot>{
+        return coordinateService.fetchCoordinatesById(id)
+    }
+
     fun createTripConfirmation(tripId: String, confirmationDate: LocalDate, riderId: String): Task<DocumentReference> {
         return tripsService.createTripConfirmation(tripId, confirmationDate, riderId)
     }

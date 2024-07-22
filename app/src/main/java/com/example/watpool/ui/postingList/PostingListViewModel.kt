@@ -23,14 +23,16 @@ class PostingListViewModel: ViewModel() {
             try {
                 val riderId = firebaseService.currentUser()
                 Log.e("PostingListView", "TripConfirm 1" + riderId)
-                val confirm = firebaseService.fetchAllConfirmedTripsByRiderId(riderId)
-                Log.e("PostingListView", "TripConfirm alkready created")
-
-            } catch (e: Exception){
-                Log.e("PostingListViewModel", "Trip Confirmation Fail " + e.message)
-                val riderId = firebaseService.currentUser()
+                /*val confirm = firebaseService.fetchAllConfirmedTripsByRiderId(riderId)
+                Log.e("PostingListView", "TripConfirm alkready created") */
                 firebaseService.addPassenger(tripId,riderId)
                 firebaseService.createTripConfirmation(tripId, java.time.LocalDate.now(), riderId)
+
+            } catch (e: Exception){
+               /* Log.e("PostingListViewModel", "Trip Confirmation Fail " + e.message)
+                val riderId = firebaseService.currentUser()
+                firebaseService.addPassenger(tripId,riderId)
+                firebaseService.createTripConfirmation(tripId, java.time.LocalDate.now(), riderId)*/
             }
         }
 
