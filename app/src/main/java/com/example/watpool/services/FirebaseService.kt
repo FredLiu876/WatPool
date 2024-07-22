@@ -147,27 +147,47 @@ class FirebaseService : Service() {
         return Tasks.whenAllComplete(
             coordinateService.addCoordinate(driverId, startLatitude, startLongitude, startLocation),
             coordinateService.addCoordinate(driverId, endLatitude, endLongitude, endLocation)
-        ).continueWith { tasks ->
+        ).continueWithTask { tasks ->
             if (tasks.isSuccessful) {
-                val startingCoordinateId = (tasks.result[0].result as? DocumentReference)?.id ?: ""
-                val endingCoordinateId = (tasks.result[1].result as? DocumentReference)?.id ?: ""
-                val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
-                val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
-                tripsService.createTrip(
-                    driverId,
-                    startingCoordinateId,
-                    endingCoordinateId,
-                    startGeohash,
-                    endGeohash,
-                    tripDate,
-                    maxPassengers,
-                    isRecurring,
-                    recurringDayOfTheWeek,
-                    recurringEndDate,
-                    tripTime
-                )
+                val startDocumentReference = tasks.result[0].result as? DocumentReference
+                val endDocumentReference = tasks.result[1].result as? DocumentReference
+
+                if (startDocumentReference != null && endDocumentReference != null) {
+                    val startDocTask = startDocumentReference.get()
+                    val endDocTask = endDocumentReference.get()
+
+                    Tasks.whenAllComplete(startDocTask, endDocTask).continueWith { docsTasks ->
+                        if (docsTasks.isSuccessful) {
+                            val startDocument = startDocTask.result
+                            val endDocument = endDocTask.result
+
+                            val startingCoordinateId = startDocument?.getString("id") ?: ""
+                            val endingCoordinateId = endDocument?.getString("id") ?: ""
+                            val startGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(startLatitude, startLongitude))
+                            val endGeohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(endLatitude, endLongitude))
+
+                            tripsService.createTrip(
+                                driverId,
+                                startingCoordinateId,
+                                endingCoordinateId,
+                                startGeohash,
+                                endGeohash,
+                                tripDate,
+                                maxPassengers,
+                                isRecurring,
+                                recurringDayOfTheWeek,
+                                recurringEndDate,
+                                tripTime
+                            )
+                        } else {
+                            Tasks.forException(docsTasks.exception ?: Exception("Error retrieving documents"))
+                        }
+                    }
+                } else {
+                    Tasks.forException(Exception("Document references are null"))
+                }
             } else {
-                Tasks.forException(tasks.exception ?: Exception("Unknown error"))
+                Tasks.forException(tasks.exception ?: Exception("Error adding coordinates"))
             }
         }
     }

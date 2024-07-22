@@ -81,11 +81,11 @@ class TripDetailFragment : Fragment(), OnMapReadyCallback {
 
         view.findViewById<Button>(R.id.leave_trip_button).setOnClickListener {
             lifecycleScope.launch {
-                val riderId = firebaseService?.currentUser()?:"Unknown"
+                val riderId = firebaseService?.currentUser() ?: "Unknown"
                 firebaseService?.deleteTripConfirmation(tripId, riderId)
+                val action = TripDetailFragmentDirections.actionTripDetailFragmentToTripListFragment()
+                findNavController().navigate(action)
             }
-            val action = TripDetailFragmentDirections.actionTripDetailFragmentToTripListFragment()
-            findNavController().navigate(action)
         }
     }
 
