@@ -225,7 +225,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                             BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
                     }
                 }
-                //postingBottomSheet.show(requireActivity().supportFragmentManager, "SupportBottomSheet")
+                postingBottomSheet.show(requireActivity().supportFragmentManager, "SupportBottomSheet")
             }
         })
 

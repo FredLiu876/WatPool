@@ -17,7 +17,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.services.FirebaseService
-import com.example.watpool.ui.tripList.TripDetailFragmentDirections
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 

@@ -207,6 +207,10 @@ class FirebaseService : Service() {
         return tripsService.createTripConfirmation(tripId, confirmationDate, riderId)
     }
 
+    fun fetchTripConfirmationByTripIdAndRiderId(tripId: String, riderId: String): Task<QuerySnapshot> {
+        return  tripsService.fetchTripConfirmationByTripIdAndRiderId(tripId, riderId)
+    }
+
     suspend fun deleteTripConfirmation(tripId: String, riderId: String) {
         val tripConfirmationId = tripsService.fetchTripConfirmationByTripIdAndRiderId(tripId, riderId).await().documents[0].id
         tripsService.deleteTripConfirmation(tripConfirmationId)
@@ -320,9 +324,11 @@ class FirebaseService : Service() {
 
     suspend fun fetchAllConfirmedTripsByRiderId(riderId: String): List<TripConfirmationDetails> {
         val tripConfirmations = tripsService.fetchTripConfirmationByRiderId(riderId).await()
+        Log.e("TripDocument", "Fetch broke")
         val tripIds = tripConfirmations.documents.mapNotNull { it.getString("tripId") }
+        Log.e("TripDocument", "Fetch map broke")
         val tripDetails = tripsCoordinateConnector(tripsService.fetchTripsByTripIds(tripIds)).await()
-
+        Log.e("TripDocument", "Connector broke")
 
         val fetchedTrips = tripDetails.mapNotNull { document ->
             try {
