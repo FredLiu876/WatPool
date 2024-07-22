@@ -22,4 +22,8 @@ class PlacesViewModel(application: Application) : AndroidViewModel(application) 
     fun getSelectedPrediction(): LiveData<String> {
         return selectedPrediction
     }
+
+    fun clearSelectedPrediction() {
+        selectedPrediction.value = ""
+    }
 }
