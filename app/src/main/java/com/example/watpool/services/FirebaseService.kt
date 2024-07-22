@@ -124,8 +124,8 @@ class FirebaseService : Service() {
     fun createUser(email: String, name: String) : Task<DocumentReference> {
         return userService.createUser(email, name)
     }
-    fun createDriver(username: String, licenseNumber: String, carModel: String, carColor: String ) : Task<Void> {
-        return userService.createDriver(username, licenseNumber, carModel, carColor)
+    fun createDriver(email: String, licenseNumber: String, carModel: String, carColor: String ) : Task<Void> {
+        return userService.createDriver(email, licenseNumber, carModel, carColor)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

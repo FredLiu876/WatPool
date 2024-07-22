@@ -37,14 +37,20 @@ class ProfileFragment : Fragment() {
                 binding.textRatingAsDriver.text = userDetails.ratingAsDriver.toString()
                 binding.textRatingAsDriver.visibility = View.VISIBLE
                 binding.labelRatingAsDriver.visibility = View.VISIBLE
+                binding.buttonBecomeDriver.visibility = View.GONE
             } else {
                 binding.textRatingAsDriver.visibility = View.GONE
                 binding.labelRatingAsDriver.visibility = View.GONE
+                binding.buttonBecomeDriver.visibility = View.VISIBLE
             }
         }
 
         binding.buttonLogout.setOnClickListener {
             profileViewModel.logoutUser()
+        }
+
+        binding.buttonBecomeDriver.setOnClickListener {
+            findNavController().navigate(R.id.become_driver)
         }
 
         profileViewModel.userLiveData.observe(viewLifecycleOwner) { user ->

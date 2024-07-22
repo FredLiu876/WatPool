@@ -27,6 +27,13 @@
         android:label="Profile"
         tools:layout="@layout/fragment_profile" />
 
+
+    <fragment
+        android:id="@+id/become_driver"
+        android:name="com.example.watpool.ui.becomeDriver.BecomeDriverFragment"
+        android:label="Become Driver"
+        tools:layout="@layout/fragment_become_driver" />
+
     <fragment
         android:id="@+id/navigation_dashboard"
         android:name="com.example.watpool.ui.create_trip.create_trip"

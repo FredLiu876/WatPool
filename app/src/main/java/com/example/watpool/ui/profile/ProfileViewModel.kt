@@ -13,8 +13,8 @@ data class UserDetails(
     val email: String,
     val isDriver: Boolean,
     val name: String,
-    val ratingAsDriver: Int,
-    val ratingAsRider: Int
+    val ratingAsDriver: Double,
+    val ratingAsRider: Double
 )
 
 class ProfileViewModel : ViewModel() {
@@ -41,8 +41,8 @@ class ProfileViewModel : ViewModel() {
                         email = document.getString("email") ?: "N/A",
                         isDriver = document.getBoolean("is_driver") ?: false,
                         name = document.getString("name") ?: "N/A",
-                        ratingAsDriver = (document.getLong("rating_as_driver") ?: 0L).toInt(),
-                        ratingAsRider = (document.getLong("rating_as_rider") ?: 0L).toInt()
+                        ratingAsDriver = (document.getLong("rating_as_driver") ?: 0L).toDouble(),
+                        ratingAsRider = (document.getLong("rating_as_rider") ?: 0L).toDouble()
                     )
                     _userDetails.value = userDetails
                 }
