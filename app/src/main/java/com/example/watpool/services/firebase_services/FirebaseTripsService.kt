@@ -127,6 +127,13 @@ class FirebaseTripsService: TripsService {
         return tripsConfirmationRef.whereEqualTo("rider_id", riderId).get()
     }
 
+    override fun fetchTripConfirmationByTripIdAndRiderId(tripId: String, riderId: String): Task<QuerySnapshot> {
+        return tripsConfirmationRef.whereEqualTo("tripId", tripId).whereEqualTo("rider_id", riderId).get()
+    }
+
+    override fun deleteTripConfirmation(documentId: String) {
+        tripsConfirmationRef.document(documentId).delete()
+    }
 
     private fun tripUpdate(tripId: String, tripUpdate: Map<String, Any>): Task<Void> {
         return tripsRef.whereEqualTo("id", tripId)

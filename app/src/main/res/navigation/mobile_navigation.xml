@@ -59,7 +59,7 @@
 
     <fragment
         android:id="@+id/tripDetailFragment"
-        android:name="com.example.watpool.ui.tripList.TripDetailFragment"
+        android:name="com.example.watpool.ui.tripDetails.TripDetailFragment"
         android:label="fragment_trip_detail"
         tools:layout="@layout/fragment_trip_detail" >
         <argument
