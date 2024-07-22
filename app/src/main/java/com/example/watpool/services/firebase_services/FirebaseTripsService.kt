@@ -279,8 +279,7 @@ class FirebaseTripsService: TripsService {
                 }
 
                 val matchingDocs: MutableList<DocumentSnapshot> = ArrayList()
-                val coordTasks: MutableList<Task<DocumentSnapshot>> = ArrayList()
-
+                val coordTasks: MutableList<Task<QuerySnapshot>> = ArrayList()
                 for (queryTask in tasks) {
                     val snap = queryTask.result
                     var coordFilterName = "starting_coordinate"
@@ -288,10 +287,10 @@ class FirebaseTripsService: TripsService {
                         coordFilterName = "ending_coordinate"
                     }
                     for (doc in snap!!.documents) {
-                        val coordTask = coordinatesRef.document(doc.getString(coordFilterName)!!).get()
+                        val coordTask = coordinatesRef.whereEqualTo("id", doc.getString(coordFilterName)).get()
                             .continueWithTask { coordSnapshotTask ->
                                 if (coordSnapshotTask.isSuccessful) {
-                                    val coordSnapshot = coordSnapshotTask.result
+                                    val coordSnapshot = coordSnapshotTask.result.documents[0]
                                     val tripLat = coordSnapshot?.getDouble("latitude")
                                     val tripLng = coordSnapshot?.getDouble("longitude")
 

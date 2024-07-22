@@ -25,7 +25,6 @@ class PostingAdapter(private var postings: List<Postings>, private val clickList
             tripFrom.text = context.getString(R.string.from_destination, posting.startCoords.location)
             tripDriver.text = posting.driverId
             tripDate.text = posting.tripDate
-
             itemView.setOnClickListener { clickListener(posting) }
         }
     }
