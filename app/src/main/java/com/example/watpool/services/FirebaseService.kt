@@ -227,6 +227,10 @@ class FirebaseService : Service() {
         return tripsService.createTripConfirmation(tripId, confirmationDate, riderId)
     }
 
+    fun fetchTripConfirmationByTripIdAndRiderId(tripId: String, riderId: String): Task<QuerySnapshot> {
+        return  tripsService.fetchTripConfirmationByTripIdAndRiderId(tripId, riderId)
+    }
+
     suspend fun deleteTripConfirmation(tripId: String, riderId: String) {
         val tripConfirmationId = tripsService.fetchTripConfirmationByTripIdAndRiderId(tripId, riderId).await().documents[0].id
         tripsService.deleteTripConfirmation(tripConfirmationId)
@@ -340,9 +344,11 @@ class FirebaseService : Service() {
 
     suspend fun fetchAllConfirmedTripsByRiderId(riderId: String): List<TripConfirmationDetails> {
         val tripConfirmations = tripsService.fetchTripConfirmationByRiderId(riderId).await()
+        Log.e("TripDocument", "Fetch broke")
         val tripIds = tripConfirmations.documents.mapNotNull { it.getString("tripId") }
+        Log.e("TripDocument", "Fetch map broke")
         val tripDetails = tripsCoordinateConnector(tripsService.fetchTripsByTripIds(tripIds)).await()
-
+        Log.e("TripDocument", "Connector broke")
 
         val fetchedTrips = tripDetails.mapNotNull { document ->
             try {
@@ -385,5 +391,53 @@ class FirebaseService : Service() {
     fun removePassenger(tripId: String, passengerId: String): Task<Void> {
         return tripsService.addPassenger(tripId, passengerId)
     }
+
+    fun fetchTripsByStartAndEnd(latitudeStart: Double, longitudeStart: Double, radiusInKmStart: Double, latitudeEnd: Double, longitudeEnd: Double, radiusInKmEnd: Double): Task<MutableList<DocumentSnapshot>>{
+        return tripsService.fetchTripsByStartEnd(latitudeStart, longitudeStart, radiusInKmStart, latitudeEnd, longitudeEnd, radiusInKmEnd)
+    }
+
+    fun tripsCoordinateConnectorLocation(task: Task<MutableList<DocumentSnapshot>>): Task<MutableList<DocumentSnapshot>> {
+        return task
+            .continueWithTask { task ->
+                if (task.isSuccessful) {
+                    val documents = task.result
+                    if (documents.isNotEmpty()) {
+                        val updateTasks = documents.map { document ->
+                            val startCoordinateId = document.getString("starting_coordinate") ?: ""
+                            val endCoordinateId = document.getString("ending_coordinate") ?: ""
+
+                            Tasks.whenAllComplete(
+                                coordinateService.fetchCoordinatesById(startCoordinateId),
+                                coordinateService.fetchCoordinatesById(endCoordinateId)
+                            ).continueWith { coordTasks ->
+                                val startLocation = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
+                                val endLocation = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getString("location") ?: ""
+                                val startLatitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val startLongitude = (coordTasks.result[0].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                val endLatitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("latitude") ?: 0.0
+                                val endLongitude = (coordTasks.result[1].result as? QuerySnapshot)?.documents?.firstOrNull()?.getDouble("longitude") ?: 0.0
+                                document.reference.update(
+                                    mapOf(
+                                        "to" to startLocation,
+                                        "from" to endLocation,
+                                        "startLatLng" to LatLng(startLatitude, startLongitude),
+                                        "endLatLng" to LatLng(endLatitude, endLongitude)
+                                    )
+                                )
+                                document
+                            }
+                        }
+                        Tasks.whenAllComplete(updateTasks)
+                            .continueWith { it -> it.result.map { it.result as DocumentSnapshot } as MutableList<DocumentSnapshot> }
+                    } else {
+                        Tasks.forResult(mutableListOf<DocumentSnapshot>())
+                    }
+                } else {
+                    Tasks.forException(task.exception ?: Exception("Unknown error"))
+                }
+            }
+    }
+
+
 
 }

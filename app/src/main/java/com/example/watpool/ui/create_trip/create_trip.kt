@@ -14,8 +14,8 @@ import android.os.Build
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.os.IBinder
-import android.text.InputType
 import android.util.Log
+import android.text.InputType
 import android.view.ContextThemeWrapper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -64,6 +64,7 @@ class create_trip : Fragment() {
     private lateinit var pickTimeBtn: Button
     private lateinit var selectedTimeTV: TextView
     private lateinit var createTripBtn: Button
+    private lateinit var backBtn: Button
 
     private lateinit var recurringSwitch: Switch
     private lateinit var recurringOptionsLayout: LinearLayout
@@ -80,11 +81,6 @@ class create_trip : Fragment() {
     private var firebaseService: FirebaseService? = null
     private var firebaseBound: Boolean = false
 
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -113,14 +109,15 @@ class create_trip : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as AppCompatActivity).supportActionBar?.hide()
-
         // Initialize the button and text view from the binding
         pickDateBtn = binding.idBtnPickDate
         selectedDateTV = binding.idTVSelectedDate
         pickTimeBtn = binding.idBtnPickTime
         selectedTimeTV = binding.idTVSelectedTime
         createTripBtn = binding.createTripBtn
+        backBtn = binding.createTripBackBtn
+
+        backBtn.visibility = View.INVISIBLE
 
         recurringSwitch = binding.recurringSwitch
         updateRecurringSwitchUI(false)
@@ -142,10 +139,13 @@ class create_trip : Fragment() {
         pickupSearchView = binding.pickupLocation
         pickupSearchView.setQueryHint("Enter pickup location")
         pickupSearchView.isIconified = false
+        pickupSearchView.clearFocus()
 
         destinationSearchView = binding.destination
         destinationSearchView.setQueryHint("Enter destination")
         destinationSearchView.isIconified = false
+        destinationSearchView.clearFocus()
+
 
 
         // Ensures each search view has separate queries
@@ -164,8 +164,28 @@ class create_trip : Fragment() {
             }
         })
 
+        arguments?.let {
+            val start = create_tripArgs.fromBundle(it).startDestination
+            val end = create_tripArgs.fromBundle(it).endDestination
+            if (start.isNotEmpty() && end.isNotEmpty()){
+                backBtn.visibility= View.VISIBLE
+            }
+            pickupSearchView.setQuery(start, false)
+            destinationSearchView.setQuery(end, false)
+
+            viewModel.setPickupLocation(start)
+            viewModel.setDestination(end)
+        }
+
+        backBtn.setOnClickListener {
+            pickupPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
+            findNavController().popBackStack()
+        }
+
         pickupSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
+                pickupSearchView.clearFocus()
                 pickupPlacesFragment.clearList()
                 return false
             }
@@ -189,6 +209,7 @@ class create_trip : Fragment() {
 
         destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
+                destinationSearchView.clearFocus()
                 destinationPlacesFragment.clearList()
                 return false
             }
@@ -264,7 +285,7 @@ class create_trip : Fragment() {
             Toast.makeText(context, status, Toast.LENGTH_LONG).show()
             if (status.startsWith("Trip created successfully")) {
                 resetSearchViews()
-                viewModel.onCreateTrip(findNavController())
+               // viewModel.onCreateTrip(findNavController())
                 viewModel.resetTripCreationStatus()
             }
 
@@ -274,6 +295,7 @@ class create_trip : Fragment() {
                 viewModel.fetchAllCoordinatesForCurrentUser(service)
             }
         })
+
 
         recurringSwitch.setOnCheckedChangeListener { _, isChecked ->
             updateRecurringSwitchUI(isChecked)
@@ -304,7 +326,13 @@ class create_trip : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        resetSearchViews()
+        arguments?.let {
+            val start = create_tripArgs.fromBundle(it).startDestination
+            val end = create_tripArgs.fromBundle(it).endDestination
+            if (start.isEmpty() && end.isEmpty()){
+                resetSearchViews()
+            }
+        }
     }
 
     private fun resetSearchViews() {
