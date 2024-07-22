@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:autofillHints="License Number"
         android:hint="@string/license_number"
-        android:inputType="text"
+        android:inputType="textCapCharacters"
         app:layout_constraintBottom_toTopOf="@id/carModel"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
