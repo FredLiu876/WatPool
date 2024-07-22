@@ -43,15 +43,15 @@ class FirebaseUserService: UserService {
         return usersRef.add(user)
     }
 
-    override fun createDriver(username: String, licenseNumber: String, carModel: String, carColor: String ): Task<Void> {
+    override fun createDriver(email: String, licenseNumber: String, carModel: String, carColor: String ): Task<Void> {
         val userUpdate = hashMapOf(
-            "license_number" to licenseNumber,
             "car_model" to carModel,
             "carColor" to carColor,
-            "license_number" to licenseNumber 
+            "license_number" to licenseNumber,
+            "is_driver" to true
         )
 
-        return usersRef.whereEqualTo("username", username)
+        return usersRef.whereEqualTo("email", email)
         .get()
         .continueWithTask { task ->
             if (task.isSuccessful) {

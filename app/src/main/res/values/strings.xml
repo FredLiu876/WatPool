@@ -48,4 +48,8 @@
     <string name="skip">Skip</string>
     <string name="end_trip">End Trip</string>
     <string name="back">Back</string>
+    <string name="car_color">Car Color</string>
+    <string name="car_model">Car Model</string>
+    <string name="license_number">License Number</string>
+    <string name="become_a_driver">Become a Driver</string>
 </resources>
