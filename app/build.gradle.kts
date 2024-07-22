@@ -75,6 +75,7 @@ dependencies {
     implementation("com.firebase:geofire-android-common:3.2.0")
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.places)
+    implementation(libs.androidx.media3.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -84,4 +85,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
     implementation("com.github.cachapa:ExpandableLayout:2.9.2")
+    implementation("com.google.maps.android:android-maps-utils:2.3.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
 }

@@ -26,6 +26,10 @@ interface TripsService {
 
     fun fetchTripConfirmationByRiderId(riderId: String): Task<QuerySnapshot>
 
+    fun fetchTripConfirmationByTripIdAndRiderId(tripId: String, riderId: String): Task<QuerySnapshot>
+
+    fun deleteTripConfirmation(documentId: String)
+
     fun acceptTripPosting(driverId: String, tripId: String): Task<Void>
 
     fun updateTripCoordinates(tripId: String, startingCoordinateId: String, endingCoordinateId: String): Task<Void>
