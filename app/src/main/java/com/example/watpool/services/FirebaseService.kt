@@ -142,7 +142,7 @@ class FirebaseService : Service() {
         isRecurring: Boolean = false,
         recurringDayOfTheWeek: FirebaseTripsService.DayOfTheWeek = FirebaseTripsService.DayOfTheWeek.SUNDAY,
         recurringEndDate: LocalDate = LocalDate.now(),
-        tripTime: LocalTime
+        tripTime: LocalTime,
     ): Task<Task<DocumentReference>> {
         return Tasks.whenAllComplete(
             coordinateService.addCoordinate(driverId, startLatitude, startLongitude, startLocation),
@@ -164,7 +164,9 @@ class FirebaseService : Service() {
                     isRecurring,
                     recurringDayOfTheWeek,
                     recurringEndDate,
-                    tripTime
+                    tripTime,
+                    startLocation,
+                    endLocation
                 )
             } else {
                 Tasks.forException(tasks.exception ?: Exception("Unknown error"))
@@ -240,9 +242,6 @@ class FirebaseService : Service() {
                                     (coordTasks.result[3].result as? QuerySnapshot)?.documents?.firstOrNull()
                                 }
 
-                                val startLocation = startDoc?.getString("location") ?: ""
-                                val endLocation = endDoc?.getString("location") ?: ""
-
                                 val startLatitude = startDoc?.getDouble("latitude") ?: 0.0
                                 val startLongitude = startDoc?.getDouble("longitude") ?: 0.0
 
@@ -250,8 +249,6 @@ class FirebaseService : Service() {
                                 val endLongitude = endDoc?.getDouble("longitude") ?: 0.0
                                 document.reference.update(
                                     mapOf(
-                                        "to" to startLocation,
-                                        "from" to endLocation,
                                         "startLatLng" to LatLng(startLatitude, startLongitude),
                                         "endLatLng" to LatLng(endLatitude, endLongitude)
                                     )
