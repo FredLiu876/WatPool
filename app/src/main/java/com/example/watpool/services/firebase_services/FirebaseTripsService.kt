@@ -364,15 +364,20 @@ class FirebaseTripsService: TripsService {
                             continue
                         }
 
-                        val startCoordTask = coordinatesRef.document(doc.getString("starting_coordinate")!!).get()
-                        val endCoordTask = coordinatesRef.document(doc.getString("ending_coordinate")!!).get()
+                       /* val startCoordTask = coordinatesRef.document(doc.getString("starting_coordinate")!!).get()
+                        val endCoordTask = coordinatesRef.document(doc.getString("ending_coordinate")!!).get()*/
 
+                        val startCoordQuery = coordinatesRef.whereEqualTo("id", doc.getString("starting_coordinate"))
+                        val endCoordQuery = coordinatesRef.whereEqualTo("id", doc.getString("ending_coordinate"))
+
+                        val startCoordTask = startCoordQuery.get()
+                        val endCoordTask = endCoordQuery.get()
                         coordTasks.add(
                             Tasks.whenAllComplete(startCoordTask, endCoordTask)
                                 .continueWithTask { coordSnapshotTasks ->
                                     if (startCoordTask.isSuccessful && endCoordTask.isSuccessful) {
-                                        val startCoordSnapshot = startCoordTask.result
-                                        val endCoordSnapshot = endCoordTask.result
+                                        val startCoordSnapshot = startCoordTask.result.documents[0]
+                                        val endCoordSnapshot = endCoordTask.result.documents[0]
 
                                         val startLat = startCoordSnapshot?.getDouble("latitude")
                                         val startLng = startCoordSnapshot?.getDouble("longitude")

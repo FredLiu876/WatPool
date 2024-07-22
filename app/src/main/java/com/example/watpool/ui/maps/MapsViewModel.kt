@@ -133,6 +133,7 @@ class MapsViewModel: ViewModel() {
                     async {
                         val dataModel = document.toObject(Postings::class.java)
                         if (dataModel != null) {
+                            Log.e("MapsViewModel", "Coord " + dataModel.startingCoordinateId)
                             val startCoordTask = async {
                                 val startSnapshot = firebaseService.fetchCoordinatesById(dataModel.startingCoordinateId).await()
                                 startSnapshot.documents[0].toObject(Coordinate::class.java)
@@ -148,6 +149,7 @@ class MapsViewModel: ViewModel() {
                             if (startCoord != null && endCoord != null) {
                                 dataModel.startCoords = startCoord
                                 dataModel.endCoords = endCoord
+                                Log.e("MapsViewModel", "Coord " + startCoord.location)
                                 synchronized(postingList) {
                                     postingList.add(dataModel)
                                 }
