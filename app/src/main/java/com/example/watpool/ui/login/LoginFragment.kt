@@ -51,7 +51,7 @@ class LoginFragment : Fragment() {
     private fun handleSignInResult(user: FirebaseUser?) {
         if (user != null) {
             // Handle successful login
-            findNavController().navigate(R.id.mapSearchView)
+            findNavController().navigate(R.id.map)
         }
     }
 
