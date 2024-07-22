@@ -44,7 +44,9 @@ class FirebaseTripsService: TripsService {
         isRecurring: Boolean,
         recurringDayOfTheWeek: DayOfTheWeek,
         recurringEndDate: LocalDate,
-        tripTime: LocalTime
+        tripTime: LocalTime,
+        startLocation: String,
+        endLocation: String,
     ): Task<DocumentReference> {
 
         val id: String = UUID.randomUUID().toString()
@@ -58,7 +60,10 @@ class FirebaseTripsService: TripsService {
             "trip_time" to tripTime.toString(),
             "driver_id" to driverId,
             "start_geohash" to startGeohash,
-            "end_geohash" to endGeohash
+            "end_geohash" to endGeohash,
+            "from" to startLocation,
+            "to" to endLocation,
+            "passengers" to listOf<String>()
         )
 
         if (isRecurring) {
