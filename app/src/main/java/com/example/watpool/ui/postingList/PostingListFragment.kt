@@ -38,11 +38,6 @@ import net.cachapa.expandablelayout.ExpandableLayout
  */
 class PostingListFragment : BottomSheetDialogFragment() {
 
-    private var _binding: FragmentPostingListDialogBinding? = null
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
-
     private val mapsViewModel: MapsViewModel by activityViewModels()
 
     private lateinit var postingDetailFragment : PostingDetailFragment
@@ -87,9 +82,8 @@ class PostingListFragment : BottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        _binding = FragmentPostingListDialogBinding.inflate(inflater, container, false)
 
-        return binding.root
+        return inflater.inflate(R.layout.fragment_posting_list_dialog, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

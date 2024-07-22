@@ -45,6 +45,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -213,7 +214,18 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         mapsViewModel.postingsInRadius.observe(viewLifecycleOwner, Observer { postings ->
             if(postings.isNotEmpty()){
-                postingBottomSheet.show(requireActivity().supportFragmentManager, "SupportBottomSheet")
+                map?.let { googleMap ->
+                    for(post in postings){
+                        val startLatLng = LatLng(post.startCoords.latitude, post.startCoords.longitude)
+                        googleMap.addMarker(MarkerOptions().position(startLatLng).title(post.startCoords.location).icon(
+                            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))
+
+                        val endLatLng = LatLng(post.endCoords.latitude, post.endCoords.longitude)
+                        googleMap.addMarker(MarkerOptions().position(endLatLng).title(post.endCoords.location).icon(
+                            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
+                    }
+                }
+                //postingBottomSheet.show(requireActivity().supportFragmentManager, "SupportBottomSheet")
             }
         })
 
