@@ -40,6 +40,7 @@
 | July 14, 2024 | 5    | Connected database to trip list with a query joining trip confirmations, trips and user tables |
 | July 15, 2024 | 3    | Debugged issues with database queries                                                          |
 | July 18, 2024 | 3    | Break trip list into three dropdown lists                                                      |
+| July 21, 2024 | 5    | Fix user id mismatch issue and create trip details page                                        |
 
 | Sriram        | Time | Task                           |
 |---------------|------|--------------------------------|

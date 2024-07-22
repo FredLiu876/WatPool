@@ -207,6 +207,11 @@ class FirebaseService : Service() {
         return tripsService.createTripConfirmation(tripId, confirmationDate, riderId)
     }
 
+    suspend fun deleteTripConfirmation(tripId: String, riderId: String) {
+        val tripConfirmationId = tripsService.fetchTripConfirmationByTripIdAndRiderId(tripId, riderId).await().documents[0].id
+        tripsService.deleteTripConfirmation(tripConfirmationId)
+    }
+
     fun tripsCoordinateConnector(task: Task<QuerySnapshot>): Task<List<DocumentSnapshot>> {
         return task
             .continueWithTask { task ->
@@ -320,25 +325,26 @@ class FirebaseService : Service() {
 
 
         val fetchedTrips = tripDetails.mapNotNull { document ->
-            val tripDateFormatted = document.getTimestamp("trip_date")?.toDate()
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            try {
+                val tripDate = document.getString("trip_date")
+                Log.d("TripDocument", "ID: ${document.getString("id")}, To: ${document.getString("to")}, From: ${document.getString("from")}, Trip Date: $tripDate, Driver ID: ${document.getString("driver_id")}")
+                val documentData = document.data
+                Log.d("TripDocument", documentData.toString())
 
-            Log.d("TripDocument", "ID: ${document.getString("id")}, To: ${document.getString("to")}, From: ${document.getString("from")}, Trip Date: $tripDateFormatted, Driver ID: ${document.getString("driver_id")}")
-            val documentData = document.data
-            Log.d("TripDocument", documentData.toString())
-
-            tripDateFormatted?.let {
                 TripConfirmationDetails(
                     id = document.getString("id") ?: "",
                     to = document.getString("to") ?: "",
                     from = document.getString("from") ?: "",
-                    tripDate = format.format(tripDateFormatted),
+                    tripDate = tripDate ?: "",
                     driverId = document.getString("driver_id") ?: "",
                     driver = ""
                 )
+            } catch (e: Exception) {
+                null
             }
+
         }
-        val fullTripDetails = fetchedTrips.map { trip ->
+        val fullTripDetails = fetchedTrips.mapNotNull { trip ->
             val driverName = userService.fetchUsersById(trip.driverId).await().documents.mapNotNull { it.getString("name") } [0]
             trip.copy(driver = driverName ?: "Unknown")
         }

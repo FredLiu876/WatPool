@@ -4,27 +4,67 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.tripList.TripDetailFragment">
+    tools:context=".ui.tripDetails.TripDetailFragment">
 
-    <TextView
-        android:id="@+id/trip_id_text_view"
-        android:layout_width="80dp"
-        android:layout_height="42dp"
-        android:layout_margin="16dp"
-        android:layout_marginStart="120dp"
-        android:text="Trip ID: "
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="60dp"
-        tools:ignore="MissingConstraints" />
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/trip_detail_map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
 
-    <Button
-        android:id="@+id/back_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Back"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/trip_id_text_view"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    <LinearLayout
+        android:layout_width="414dp"
+        android:layout_height="229dp"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:paddingLeft="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Driver Name -->
+        <TextView
+            android:id="@+id/driver_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Driver:"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Trip Date -->
+        <TextView
+            android:id="@+id/trip_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trip Date:"
+            android:textSize="16sp" />
+
+        <!-- Trip From -->
+        <TextView
+            android:id="@+id/trip_from"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="From:"
+            android:textSize="16sp" />
+
+        <!-- Trip To -->
+        <TextView
+            android:id="@+id/trip_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To:"
+            android:textSize="16sp" />
+
+        <!-- Leave Trip Button -->
+        <Button
+            android:id="@+id/leave_trip_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:text="Leave Trip" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

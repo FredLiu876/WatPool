@@ -32,7 +32,7 @@ import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.LocationService
 import com.example.watpool.services.models.Trips
 import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
-import com.example.watpool.ui.tripList.TripDetailFragmentDirections
+import com.example.watpool.ui.tripDetails.TripDetailFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -98,13 +98,14 @@ class OngoingTripFragment : Fragment(), OnMapReadyCallback {
         }
     }
     private fun getCoordinates(tripsId: String) {
+        Log.i("OngoingTripFragment", tripsId)
         val trip = firebaseService?.fetchTripsByTripsId(listOf(tripsId))
         trip?.addOnSuccessListener { documentSnapshots ->
             for (document in documentSnapshots) {
                 val foundTrip = document.toObject(Trips::class.java)
                 if (foundTrip != null) {
                     tripOrigin = foundTrip.startLatLng
-                    tripDestination = foundTrip.startLatLng
+                    tripDestination = foundTrip.endLatLng
                 }
             }
         }?.addOnFailureListener {
