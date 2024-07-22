@@ -10,40 +10,50 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.watpool.R
 import com.example.watpool.databinding.FragmentMapsBinding
 import com.example.watpool.services.FirebaseService
 import com.example.watpool.services.models.Coordinate
 import com.example.watpool.services.LocationService
-import com.example.watpool.ui.safetyBottomSheet.SafetyBottomSheetDialog
+import com.example.watpool.services.models.Trips
+import com.example.watpool.services.models.Postings
+import com.example.watpool.ui.postingList.PostingDetailFragment
+import com.example.watpool.ui.postingList.PostingListFragment
+import com.example.watpool.ui.tripList.TripListFragmentDirections
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
+import com.google.firebase.firestore.toObject
 import java.io.IOException
 import java.util.Locale
 import org.json.JSONObject
@@ -63,19 +73,22 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     // onDestroyView.
     private val binding get() = _binding!!
     // Search view for maps
-    private lateinit var searchView : SearchView
+    private lateinit var startSearchView : SearchView
+    private lateinit var destinationSearchView: SearchView
 
-    private lateinit var placesFragment: PlacesFragment
+    private lateinit var startPlacesFragment: PlacesFragment
+    private lateinit var destinationPlacesFragment: PlacesFragment
+
+    private lateinit var postingBottomSheet: PostingListFragment
 
     // View Models
-    private val mapsViewModel: MapsViewModel by viewModels()
+    private val mapsViewModel: MapsViewModel by activityViewModels()
     private lateinit var placesViewModel: PlacesViewModel
 
     // Create google map object to be used for modification within fragment
     // Dont show map until location is set
     private var map : GoogleMap? = null
     private var isMapReady = false
-    private var findingRoute = false
 
     // Stored locations
     private var userLocation: Location? = null
@@ -89,31 +102,52 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private var firebaseBound: Boolean = false
 
     // Search radius for getting postings
-    private var searchRadius : Double = 1.0
+    private var startSearchRadius : Double = 1.0
+    private var destinationSearchRadius : Double = 1.0
+
+    // Current destination of search views
+    private var startDestinationLocation : String = ""
+    private var endDestinationLocation : String = ""
+
+    // Bool to determine which search has focus
+    private var isEndDestinationFocused: Boolean = false
+    private var isStartDestinationFocused: Boolean = false
+
+    // Determine if prediction in progress so list can go away
+    private var isSelection: Boolean = false
 
     private fun moveMapCamera(location: Location){
-        placesFragment.clearList()
+        startPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
         map?.let { googleMap ->
             val latLng = LatLng(location.latitude, location.longitude)
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+
         }
+
     }
-    private fun showPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
-        val postings = firebaseService?.fetchCoordinatesByLocation(locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
-        postings?.addOnSuccessListener { documentSnapshot ->
-            for (document in documentSnapshot) {
-                val dataModel = document.toObject(Coordinate::class.java)
-                if (dataModel != null) {
-                    val postLatLng = LatLng(dataModel.latitude, dataModel.longitude)
-                    map?.addMarker(MarkerOptions().position(postLatLng).title(dataModel.id))
-                }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun fetchPostingsInRadius(locationLatLng: LatLng, radiusInKm: Double){
+        map?.let {
+            val cameraPosition = it.cameraPosition.target
+            firebaseService?.let {  firebase ->
+                mapsViewModel.fetchPostingsByStartAndEnd(firebase, cameraPosition.latitude, cameraPosition.longitude, radiusInKm, locationLatLng.latitude, locationLatLng.longitude, radiusInKm)
             }
-        }?.addOnFailureListener {
-            Toast.makeText(requireContext(), "Error Finding Posts", Toast.LENGTH_SHORT).show()
         }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
+        startSearchView.setQuery("", true)
+        destinationSearchView.setQuery("", true)
     }
 
 
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -123,28 +157,24 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         val root: View = binding.root
 
         if (savedInstanceState == null) {
-            placesFragment = PlacesFragment()
+            startPlacesFragment = PlacesFragment()
+            destinationPlacesFragment = PlacesFragment()
             childFragmentManager.commit {
-                add(R.id.places_fragment_container, placesFragment)
+                add(R.id.places_fragment_start_container, startPlacesFragment)
+                add(R.id.places_fragment_destination_container, destinationPlacesFragment)
             }
         } else {
-            placesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_container) as PlacesFragment
+            startPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_start_container) as PlacesFragment
+            destinationPlacesFragment = childFragmentManager.findFragmentById(R.id.places_fragment_destination_container) as PlacesFragment
         }
 
         placesViewModel = ViewModelProvider(requireActivity()).get(PlacesViewModel::class.java)
 
-        // Bottom of map safety sheet bindings and listener
-        val buttonOpenBottomSheet: MaterialButton = binding.btnInfo
-        buttonOpenBottomSheet.setOnClickListener {
-            val bottomSheet = SafetyBottomSheetDialog()
-            bottomSheet.show(requireActivity().supportFragmentManager, "safetyBottomSheet")
-        }
-
         // Recenter button bindings and listener
         val recenterButton: MaterialButton = binding.btnRecenter
         recenterButton.setOnClickListener {
-            findingRoute = false
-            placesFragment.clearList()
+            startPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
             drawRadius()
             userLocation?.let {
                 moveMapCamera(it)
@@ -152,99 +182,153 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
 
         }
 
+        postingBottomSheet = PostingListFragment()
+
         val searchButton: MaterialButton = binding.btnSearch
         searchButton.setOnClickListener {
-            findingRoute = false
-            placesFragment.clearList()
+            startPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
             drawRadius()
             val cameraPosition = map?.cameraPosition?.target
             cameraPosition?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
-                showPostingsInRadius(latLng, searchRadius)
+                fetchPostingsInRadius(latLng, startSearchRadius)
             }
+
         }
 
         val sliderLabel : TextView = binding.textRadius
 
         val radiusSlider: Slider = binding.sliderRadius
-        searchRadius = radiusSlider.value.toDouble()
+        startSearchRadius = radiusSlider.value.toDouble()
         radiusSlider.addOnChangeListener { _, value, _ ->
-            findingRoute = false
-            placesFragment.clearList()
-            searchRadius = value.toDouble()
+            startPlacesFragment.clearList()
+            destinationPlacesFragment.clearList()
+            startSearchRadius = value.toDouble()
             drawRadius()
             sliderLabel.text = buildString {
-                append("$searchRadius")
+                append("$startSearchRadius")
                 append(" km")
             }
         }
 
+        mapsViewModel.postingsInRadius.observe(viewLifecycleOwner, Observer { postings ->
+            if(postings.isNotEmpty()){
+                map?.let { googleMap ->
+                    for(post in postings){
+                        val startLatLng = LatLng(post.startCoords.latitude, post.startCoords.longitude)
+                        googleMap.addMarker(MarkerOptions().position(startLatLng).title(post.startCoords.location).icon(
+                            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)))
 
-        // Top search bar binding and listener
-        searchView = binding.mapSearchView
-
-        // allow for clicking anywhere on search view to search
-        searchView.isIconified = false
-
-        // TODO: clear predictions after selected item
-        // Set search view to selected prediction
-        placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
-            searchView.setQuery(prediction, true)
+                        val endLatLng = LatLng(post.endCoords.latitude, post.endCoords.longitude)
+                        googleMap.addMarker(MarkerOptions().position(endLatLng).title(post.endCoords.location).icon(
+                            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)))
+                    }
+                }
+                postingBottomSheet.show(requireActivity().supportFragmentManager, "SupportBottomSheet")
+            }
         })
 
-        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+        // Top search bar binding and listener
+        startSearchView = binding.mapSearchViewStart
+        destinationSearchView = binding.mapSearchViewDestination
+
+        // allow for clicking anywhere on search view to search
+        startSearchView.isIconified = false
+        destinationSearchView.isIconified = false
+
+        startSearchView.clearFocus()
+        destinationSearchView.clearFocus()
+
+        // Set search view to selected prediction
+        placesViewModel.getSelectedPrediction().observe(viewLifecycleOwner, Observer { prediction ->
+            if(startSearchView.hasFocus()){
+                isSelection = true
+                startSearchView.setQuery(prediction, true)
+                startDestinationLocation = prediction
+                startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
+                isSelection = false
+            }
+            if(destinationSearchView.hasFocus()){
+                isSelection = true
+                destinationSearchView.setQuery(prediction, true)
+                endDestinationLocation = prediction
+                startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
+                isSelection = false
+            }
+        })
+
+        startSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
             override fun onQueryTextSubmit(query: String?): Boolean {
-                findingRoute = false
-                placesFragment.clearList()
-                query?.let { locationSearch(it) }
+                startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
+                startSearchView.clearFocus()
+                query?.let {
+                   startDestinationLocation =  locationSearch(it)
+                }
+
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                findingRoute = false
                 // Check if text is null otherwise get recommendations based on user search
-                if(!newText.isNullOrEmpty()) {
-                    placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
-                        placesFragment.updateList(predictions)
-                    })
-                } else {
-                    placesFragment.clearList()
+                if(!isSelection){
+                    if(!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
+                            startPlacesFragment.updateList(predictions)
+                        })
+                    } else {
+                        startPlacesFragment.clearList()
+                    }
                 }
                 return true
             }
         })
 
-
-        val buttonFindRoute: MaterialButton = binding.findRoute
-        buttonFindRoute.setOnClickListener {
-            findingRoute = true
-            // Fetch and draw the route once the map is ready
-            val origin =  map?.cameraPosition?.target// Example origin
-            val destination = LatLng(43.4698361, -80.5164223) // Example destination
-            origin?.let {
-                val originLatLng = LatLng(origin.latitude, origin.longitude)
-                mapsViewModel.fetchDirections(
-                    (LatLng(origin.latitude, origin.longitude)),
-                    destination
-                )
-                map?.clear()
-                map?.addMarker(MarkerOptions().position(originLatLng))
+        destinationSearchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                startPlacesFragment.clearList()
+                destinationPlacesFragment.clearList()
+                destinationSearchView.clearFocus()
+                query?.let {
+                    endDestinationLocation = locationSearch(it)
+                }
+                return false
             }
-            map?.addMarker(MarkerOptions().position(destination))
-            map?.let { googleMap ->
-                val latLng = LatLng(destination.latitude, destination.longitude)
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-            }
-        }
 
-        mapsViewModel.directions.observe(viewLifecycleOwner, Observer { directions ->
-            directions?.let {
-                drawRoute(it)
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Check if text is null otherwise get recommendations based on user search
+                if(!isSelection){
+                    if(!newText.isNullOrEmpty()) {
+                        placesViewModel.getAutocompletePredictions(newText).observe(viewLifecycleOwner, Observer { predictions ->
+                            destinationPlacesFragment.updateList(predictions)
+                        })
+                    } else {
+                        destinationPlacesFragment.clearList()
+                    }
+                }
+                return true
             }
         })
 
+        val createButton: MaterialButton = binding.btnCreate
+        createButton.setOnClickListener {
+            createTrip()
+        }
+
         initializeMap()
         return root
+    }
+
+    private fun createTrip(){
+        val action = MapsFragmentDirections.actionMapFragmentToCreateTripFragment(startDestinationLocation, endDestinationLocation)
+        startPlacesFragment.clearList()
+        destinationPlacesFragment.clearList()
+        startPlacesFragment.onDestroy()
+        destinationPlacesFragment.onDestroy()
+        findNavController().navigate(action)
     }
 
     private fun drawRadius(){
@@ -254,7 +338,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             map?.addCircle(
                 CircleOptions()
                     .center(it)
-                    .radius(searchRadius * 1000)
+                    .radius(startSearchRadius * 1000)
                     .strokeColor(0xFF0000FF.toInt())
                     .fillColor(0x220000FF)
                     .strokeWidth(5f)
@@ -280,9 +364,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             isMapReady = true
             userLocation?.let { moveMapCamera(it) }
             googleMap.setOnCameraIdleListener {
-                if(!findingRoute){
-                    drawRadius()
-                }
+                drawRadius()
+
+
             }
         }
     }
@@ -339,8 +423,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-
-    // TODO: cleanup location connection to use location service data properly
     // Create service connection to get location data to maps
     private val locationConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -366,7 +448,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
             // Bind to LocationService, uses Bind_Auto_create to create service if it does not exist
-            // TODO: Take binding out of specific functions and make it its own private function
             val serviceIntent = Intent(requireContext(), LocationService::class.java)
             requireContext().bindService(serviceIntent, locationConnection, Context.BIND_AUTO_CREATE)
         } else {
@@ -374,7 +455,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
-    // TODO: Possibly make permission manager so dont need to handle it all in one fragment
     // Check if location permissions are granted
     private fun arePermissionsGranted(): Boolean {
         return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -392,7 +472,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     }
 
     // Search for location using geocoder
-    private fun locationSearch(location: String){
+    private fun locationSearch(location: String) : String{
         // locale.getdefault gets users deafult language and other preferences
         // Use requireContext() to ensure context is not null
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
@@ -407,44 +487,36 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                 map?.clear()
                 map?.addMarker(MarkerOptions().position(latLng).title(location))
                 map?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+                return address.getAddressLine(0)
             } else {
                 Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+                return ""
             }
         } catch (e: IOException) {
             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            return ""
         }
     }
-    private fun drawRoute(directions: String) {
+
+    private fun locationSearchCoordinate(lat: Double, lng: Double): String{
+        // locale.getdefault gets users deafult language and other preferences
+        // Use requireContext() to ensure context is not null
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
         try {
-            val jsonObject = JSONObject(directions)
-            val routes = jsonObject.getJSONArray("routes")
-            val points = ArrayList<LatLng>()
-            val polylineOptions = PolylineOptions()
-
-            for (i in 0 until routes.length()) {
-                val route = routes.getJSONObject(i)
-                val legs = route.getJSONArray("legs")
-
-                for (j in 0 until legs.length()) {
-                    val leg = legs.getJSONObject(j)
-                    val steps = leg.getJSONArray("steps")
-
-                    for (k in 0 until steps.length()) {
-                        val step = steps.getJSONObject(k)
-                        val point = step.getJSONObject("start_location")
-                        val lat: Double = point.getDouble("lat")
-                        val lng: Double = point.getDouble("lng")
-                        val position = LatLng(lat, lng)
-                        points.add(position)
-                    }
-                }
+            // Using deprecated function because newer version does not work with out min sdk setup
+            // If min sdk updated replace with geocoder listener setup in android documentation
+            val addressList = geocoder.getFromLocation(lat, lng, 5)
+            if (!addressList.isNullOrEmpty()) {
+                val address = addressList[0]
+                // Clear map so that old markers dont remain when moving across the map
+                return address.getAddressLine(0)
+            } else {
+                Toast.makeText(requireContext(), "Location not found", Toast.LENGTH_SHORT).show()
+                return ""
             }
-            polylineOptions.addAll(points)
-            polylineOptions.width(12f)
-            polylineOptions.geodesic(true)
-            map?.addPolyline(polylineOptions)
-        } catch (e: Exception) {
-            Log.e("Draw route Exception", e.toString())
+        } catch (e: IOException) {
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            return ""
         }
     }
 }
