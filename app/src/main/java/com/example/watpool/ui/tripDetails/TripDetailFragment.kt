@@ -34,6 +34,7 @@ import com.google.maps.android.PolyUtil
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.example.watpool.BuildConfig
 import com.example.watpool.services.models.TripConfirmationDetails
 import com.example.watpool.services.models.Trips
 import com.example.watpool.ui.tripList.TripListFragmentDirections
@@ -146,7 +147,7 @@ class TripDetailFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun fetchRoute(start: LatLng, end: LatLng) {
-        val apiKey = "AIzaSyCOUm5uLrFqX49t3YBxHsMoxn4ZyspxCBM"
+        val apiKey = BuildConfig.MAPS_API_KEY
         val url = "https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey"
 
         Log.i("TripDetailFragment", "Sending request")

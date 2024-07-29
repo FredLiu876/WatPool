@@ -41,9 +41,13 @@
 | June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                                                 |
 | June 18, 2024 | 1    | Created initial trip list view                                                                 |
 | June 20, 2024 | 3    | Created trip details and connected parts                                                       |
+| June 22, 2024 | 0.5  | D3 Presentation Prep                                                                           |
 | June 23, 2024 | 1    | Connected trip list to trip safety features                                                    |
+| July 09, 2024 | 0.5  | Meeting for D4                                                                                 |
 | July 14, 2024 | 5    | Connected database to trip list with a query joining trip confirmations, trips and user tables |
 | July 15, 2024 | 3    | Debugged issues with database queries                                                          |
+| July 15, 2024 | 0.5  | D5                                                                                             |
+| July 15, 2024 | 0.5  | Meeting for D6                                                                                 |
 | July 18, 2024 | 3    | Break trip list into three dropdown lists                                                      |
 | July 21, 2024 | 5    | Fix user id mismatch issue and create trip details page                                        |
 
