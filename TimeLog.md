@@ -60,13 +60,22 @@
 | June 22, 2024 | 0.5  | D3 Presentation Prep           |
 | July 08, 2024 | 1.5  | Data Model Planning            |
 | July 09, 2024 | 0.5  | Meeting for D4                 |
+| July 09, 2024 | 2.0  | D4 Document                    |
 | July 09, 2024 | 1.0  | User DB Service                |
 | July 10, 2024 | 1.0  | Trips DB Service               |
+| July 12, 2024 | 2.0  | Cleanup & Merging              |
 | July 14, 2024 | 0.5  | Meeting for D5                 |
+| July 15, 2024 | 2.0  | D5 Document                    |
 | July 15, 2024 | 1.0  | Trips DB Service - P2          |
 | July 15, 2024 | 0.5  | D5                             |
-| July 15, 2024 | 0.5  | Meeting for D6                 |
+| July 15, 2024 | 0.5  | Meeting for D6 Presentation    |
 | July 15, 2024 | 2.0  | Fetching Trips By Location     |
+| July 21, 2024 | 5.0  | Testing & Fixing Minor Issues  |
+| July 22, 2024 | 0.5  | D6 Document Meeting            |
+| July 24, 2024 | 2.0  | D6 Document                    |
+| July 28, 2024 | 0.5  | D7 Meeting                     |
+| July 29, 2024 | 0.5  | D7 Document                    |
+
 
 
 | Arham         | Time | Task                                                                          |
