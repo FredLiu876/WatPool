@@ -20,6 +20,11 @@
 | July 21, 2024 | 1    | Fix Search bug due to new trip creation functions                       |
 | July 21, 2024 | 6    | Search trips by starting or end depending on search views               |
 | July 22, 2024 | 1    | Testing and prep for final demo on my phone                             |
+| July 22, 2024 | 0.5  | D6 Document Meeting                                                     |
+| July 24, 2024 | 2.0  | D6 Document                                                             |
+| July 28, 2024 | 0.5  | D7 Meeting                                                              |
+| July 29, 2024 | 0.5  | D7 Document                                                             |
+| July 30, 2024 | 1    | Create Youtube Demo                                                     |
 
 
 
