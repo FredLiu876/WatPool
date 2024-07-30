@@ -83,7 +83,9 @@
 | June 05, 2024 | 0.5  | Inital Project File Creation                                                  |
 | June 10, 2024 | 0.5  | Meeting to discuss D2 feedback                                                |
 | June 20, 2024 | 4.0  | Created trip creation form                                                    |
+| July 09, 2024 | 0.5  | D4 Meeting                                                                    |
 | July 12, 2024 | 5.5  | Added search suggestions to create trip form                                  |
+| July 14, 2024 | 0.5  | D5 Meeting                                                                    |
 | July 18, 2024 | 4    | Connected create trip form to database                                        |
 | July 18, 2024 | 1.5  | Get coordinates for trips from google maps API query                          |
 | July 18, 2024 | 1    | Fixed starting and ending coordinate IDs in createTrip in TripService         |
