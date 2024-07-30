@@ -100,9 +100,18 @@
 | June 17, 2024 | 2.5  | Login Page Setup and Rerouting                                     |
 | June 22, 2024 | 0.5  | D3 Presentation Prep                                               |
 | July 09, 2024 | 0.5  | Meeting for D4                                                     |
+| July 09, 2024 | 2.0  | D4 Document                                                        |
+| July 12, 2024 | 2.0  | Planning helper functions and signup page flow                     |
 | July 13, 2024 | 2.5  | SignUp Page and Firebase setup                                     |
 | July 14, 2024 | 0.5  | Meeting for D5                                                     |
+| July 15, 2024 | 2.0  | D5 Document                                                        |
 | July 15, 2024 | 4.0  | Separate Workflows for login and signup with sustained user access |
+| July 16, 2024 | 1.5  | Debugging user object creation and linkage to userID at signup     |
 | July 18, 2024 | 4.0  | Profile Screen and Logout functionality                            |
+| July 20, 2024 | 1.0  | Modifying themes and styling on user flow for demo                 |
+| July 22, 2024 | 0.5  | D6 Document Meeting                                                |
+| July 24, 2024 | 2.0  | D6 Document                                                        |
+| July 28, 2024 | 0.5  | D7 Meeting                                                         |
+| July 29, 2024 | 0.5  | D7 Document                                                        |
 
 
